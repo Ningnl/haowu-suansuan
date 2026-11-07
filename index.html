@@ -180,6 +180,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);backgrou
   display:flex;gap:12px;align-items:flex-start;
 }
 .rec .left{flex:1;min-width:0}
+.rec-actions{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
 .rec .name{font-weight:800;font-size:14.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
 .rec .meta{font-size:11.5px;color:var(--ink-4);margin-top:2px}
 .rec .prices{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
@@ -674,7 +675,7 @@ body.sheet-open{overflow:hidden}
   };
 });
 </script>
-<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T10:17:16.832Z',builder:'DeepSeek Harness (nyx)'};
+<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T11:21:36.006Z',builder:'DeepSeek Harness (nyx)'};
 /* =========================================================================
  * T-020 v1.1 · 应用层（UI / 状态 / 飞书联调）
  * 依赖：window.T020Engine（计价引擎）、可选 window.echarts（图表，失败自动降级 SVG）
@@ -732,8 +733,10 @@ body.sheet-open{overflow:hidden}
     records: SEED_RECORDS.slice(),
     customUnits: {},
     feishu: {
-      mode: 'mock', appId: '', appSecret: '', appToken: 'bascnRonkanConsumablesT020',
-      itemsTable: 'tbl_ConsumableItems_T020', recordsTable: 'tbl_PurchaseRecords_T020',
+      mode: 'mock', appId: '', appSecret: '', appId: 'cli_aa64474c32f81c01',
+      appToken: 'V1Mhb3fQqaB8VLsseBdcxHjQn7e',
+      itemsTable: 'tblzN67gdHzoPi5M', recordsTable: 'tblFH9VPO0PGGq66',
+      proxyBase: 'https://t020-proxy.vercel.app/api',
       proxyBase: '', lastSync: '', lastResult: ''
     }
   };
@@ -985,7 +988,10 @@ body.sheet-open{overflow:hidden}
       record_id: rec.record_id,
       feishu_id: rec.feishu_id || '',
       item_id: rec.item_id,
-      date: rec.date,
+      date: (function (d) {
+        var t = Date.parse(String(d) + 'T00:00:00+08:00');
+        return isNaN(t) ? d : t;
+      })(rec.date),
       platform: rec.platform,
       pack_count: rec.pack_count,
       unit_qty: rec.unit_qty,
@@ -1129,6 +1135,18 @@ body.sheet-open{overflow:hidden}
     return html;
   }
 
+  function deleteRecord(id) {
+    var rec = state.records.filter(function (r) { return r.record_id === id; })[0];
+    if (!rec) return;
+    var item = itemById(rec.item_id);
+    var label = (item ? item.item_name : rec.item_id) + ' · ' + rec.date + ' · ' + E.money(rec.total_price);
+    if (!window.confirm('删除这条购买记录？\n' + label + '\n（只删本机；飞书表里的行需要手动删）')) return;
+    state.records = state.records.filter(function (r) { return r.record_id !== id; });
+    save();
+    render();
+    toast('已删除：' + label);
+  }
+
   function specText(rec) {
     var s = rec.pack_count + '×' + rec.unit_qty + E.unit(rec.amount_unit).label;
     if (rec.gift_qty) s += ' + 赠 ' + rec.gift_qty + ' ' + E.unit(rec.gift_unit || rec.amount_unit).label;
@@ -1154,7 +1172,10 @@ body.sheet-open{overflow:hidden}
           '<span class="pill">总量 ' + E.round(x.c.totalQuantity, 2) + ' ' + esc(E.unit(x.rec.amount_unit).label) + '</span>' +
         '</div>' +
       '</div>' +
-      '<button class="btn ghost sm" data-rebuy="' + esc(x.rec.record_id) + '">再买</button>' +
+      '<div class="rec-actions">' +
+        '<button class="btn ghost sm" data-rebuy="' + esc(x.rec.record_id) + '">再买</button>' +
+        '<button class="btn danger sm" data-del-rec="' + esc(x.rec.record_id) + '" title="删除这条记录">删除</button>' +
+      '</div>' +
       '</div>';
   }
 
@@ -1665,7 +1686,7 @@ body.sheet-open{overflow:hidden}
       '<label class="field"><span>App Secret</span><input id="fAppSecret" type="password" placeholder="留空则沿用已保存值" value="' + esc(f.appSecret) + '"/></label>' +
       '<div class="grid2">' +
         '<label class="field"><span>app_token</span><input id="fAppToken" value="' + esc(f.appToken) + '"/></label>' +
-        '<label class="field"><span>代理基址（real 模式必填）</span><input id="fProxy" placeholder="https://your-proxy.example.com" value="' + esc(f.proxyBase) + '"/></label>' +
+        '<label class="field"><span>代理基址（填到 /api）</span><input id="fProxy" placeholder="https://t020-proxy.vercel.app/api" value="' + esc(f.proxyBase) + '"/></label>' +
         '<label class="field"><span>商品档案表</span><input id="fItemsTable" value="' + esc(f.itemsTable) + '"/></label>' +
         '<label class="field"><span>已购记录表</span><input id="fRecordsTable" value="' + esc(f.recordsTable) + '"/></label>' +
       '</div>' +
@@ -1770,7 +1791,15 @@ body.sheet-open{overflow:hidden}
       '<label class="field"><span>录入单位</span><select id="rUnit">' + unitOptions(p.unit || 'kg') + '</select></label>' +
       '<label class="field"><span>赠品量</span><input id="rGift" type="number" step="0.01" value="' + (p.gift_qty != null ? p.gift_qty : 0) + '"/></label>' +
       '<label class="field"><span>赠品单位</span><select id="rGiftUnit">' + unitOptions(p.gift_unit || p.unit || 'kg') + '</select></label>' +
-      '<label class="field"><span>主基准</span><select id="rPrimary">' + primaryOptions(p.primary || 'kg') + '</select></label>' +
+      '<label class="field" style="grid-column:1 / -1"><span>主基准（可自定义）</span><select id="rPrimary">' + primaryOptions(p.unit || 'kg', p.primary || 'kg') + '</select>' +
+        '<div id="rPrimaryCustom" style="display:none;margin-top:8px" class="grid2">' +
+          '<label class="field" style="margin:0"><span>数量 N</span><input id="rpN" type="number" step="0.01" min="0.01" value="1"/></label>' +
+          '<label class="field" style="margin:0"><span>单位（手输）</span><input id="rpUnit" list="rpUnitList" autocomplete="off" placeholder="包 / 抽 / 千克" value="' + esc(E.unit(p.unit || 'kg').label) + '"/>' +
+            '<datalist id="rpUnitList">' + unitsOfGroup(E.groupOf(p.unit || 'kg')).map(function (k) { return '<option value="' + esc(E.UNITS[k].label) + '"></option>'; }).join('') + '</datalist>' +
+          '</label>' +
+          '<label class="field" style="margin:0;grid-column:1 / -1"><span>1 个该单位 = 多少原子量</span><input id="rpFactor" type="number" step="0.0001" min="0.0001" value="1"/></label>' +
+          '<div style="grid-column:1 / -1"><button type="button" class="btn sm" id="rpApply">创建并选用</button></div>' +
+        '</div></label>' +
     '</div>';
     html += '<div class="prev" id="rPrev"></div>';
     html += '<div class="row"><button type="submit" class="btn block">保存记录</button>' +
@@ -1798,6 +1827,35 @@ body.sheet-open{overflow:hidden}
     }
     ['rPrice', 'rPack', 'rQty', 'rGift'].forEach(function (id) { var el = $('#' + id); if (el) el.addEventListener('input', updatePrev); });
     ['rUnit', 'rPrimary', 'rGiftUnit'].forEach(function (id) { var el = $('#' + id); if (el) el.addEventListener('change', updatePrev); });
+    $('#rUnit').addEventListener('change', function () {
+      rebuildPrimaryOptions();
+      var box = $('#rPrimaryCustom');
+      if (box) box.style.display = 'none';
+    });
+    $('#rPrimary').addEventListener('change', function () {
+      var box = $('#rPrimaryCustom');
+      if (!box) return;
+      box.style.display = $('#rPrimary').value === '__custom__' ? 'block' : 'none';
+      if (box.style.display === 'block') {
+        var f = $('#rpFactor');
+        if (f) f.value = '1';
+        var ru = $('#rpUnit');
+        if (ru) ru.value = E.unit($('#rUnit').value).label;
+      }
+    });
+    var applyBtn = $('#rpApply');
+    if (applyBtn) applyBtn.addEventListener('click', function () {
+      var unit = $('#rUnit').value;
+      var n = Number($('#rpN').value);
+      var name = ($('#rpUnit').value || '').trim();
+      var factor = Number($('#rpFactor').value);
+      if (!(n > 0) || !name || !(factor > 0)) { toast('数量 / 单位 / 换算系数都要填'); return; }
+      var sc = createScaleInline(unit, n, name, factor);
+      $('#rPrimary').innerHTML = primaryOptions(unit, sc.key);
+      $('#rPrimaryCustom').style.display = 'none';
+      updatePrev();
+      toast('已创建主基准：' + sc.label);
+    });
     var _unitTouched = false;
     $('#rGiftUnit').addEventListener('change', function () { _unitTouched = true; });
     $('#rUnit').addEventListener('change', function () {
@@ -1884,10 +1942,35 @@ body.sheet-open{overflow:hidden}
     });
   }
 
-  function primaryOptions(selected) {
-    return ['kg', 'L', '100chou', 'ge', 'm'].map(function (k) {
-      return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>' + esc(E.UNITS[k].label) + '</option>';
+  function primaryOptions(unitKey, selected) {
+    var list = E.scalesFor(unitKey || 'kg');
+    var html = list.map(function (sc) {
+      return '<option value="' + sc.key + '"' + (sc.key === selected ? ' selected' : '') + '>' + esc(sc.label) + '</option>';
     }).join('');
+    if (!list.some(function (sc) { return sc.key === selected; }) && selected) {
+      html = '<option value="' + esc(selected) + '" selected>' + esc(selected) + '</option>' + html;
+    }
+    return html + '<option value="__custom__">＋ 自定义基准…</option>';
+  }
+  function rebuildPrimaryOptions() {
+    var unit = $('#rUnit').value;
+    var cur = $('#rPrimary').value;
+    var list = E.scalesFor(unit);
+    var keep = list.some(function (sc) { return sc.key === cur; }) ? cur : list[0].key;
+    $('#rPrimary').innerHTML = primaryOptions(unit, keep);
+  }
+  /** 记录弹窗内联新建基准：N × 单位（同量纲）→ 注册为基准并选中 */
+  function createScaleInline(unit, n, name, factor) {
+    var group = E.groupOf(unit);
+    var atomic = n * factor;
+    var label = autoScaleLabel(n, name);
+    var key = uniqueScaleKey(group);
+    var sc = { key: key, label: label, short: autoScaleShort(n, name), atomic: atomic, unit: name, unitFactor: factor };
+    (E.SCALES[group] || (E.SCALES[group] = [])).push(sc);
+    state.scalesCustom = state.scalesCustom || [];
+    state.scalesCustom.push({ group: group, key: key, label: label, short: sc.short, atomic: atomic, unit: name, unitFactor: factor });
+    save();
+    return sc;
   }
   function guessUnit(item) {
     var p = item.primary_unit;
@@ -2155,7 +2238,7 @@ body.sheet-open{overflow:hidden}
   }
 
   document.addEventListener('click', function (ev) {
-    var t = ev.target.closest('[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-act],[data-del-opt],[data-archive],[data-close]');
+    var t = ev.target.closest('[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-del-rec],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-act],[data-del-opt],[data-archive],[data-close]');
     if (!t) return;
     var nav = t.getAttribute('data-nav');
     if (nav) { state.tab = nav; window.scrollTo({ top: 0 }); render(); return; }
@@ -2251,6 +2334,9 @@ body.sheet-open{overflow:hidden}
       openRecordSheet({ rebuyOf: r.record_id, itemId: r.item_id, itemName: it.item_name, date: today(), platform: r.platform, pack_count: r.pack_count, unit_qty: r.unit_qty, gift_qty: r.gift_qty, unit: r.amount_unit, primary: it.primary_unit });
       return;
     }
+
+    var delRec = t.getAttribute('data-del-rec');
+    if (delRec) { deleteRecord(delRec); return; }
 
     var del = t.getAttribute('data-del-opt');
     if (del) {
