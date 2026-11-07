@@ -675,7 +675,7 @@ body.sheet-open{overflow:hidden}
   };
 });
 </script>
-<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T16:17:46.599Z',builder:'DeepSeek Harness (nyx)'};
+<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T17:50:48.987Z',builder:'DeepSeek Harness (nyx)'};
 /* =========================================================================
  * T-020 v1.1 · 应用层（UI / 状态 / 飞书联调）
  * 依赖：window.T020Engine（计价引擎）、可选 window.echarts（图表，失败自动降级 SVG）
@@ -690,6 +690,8 @@ body.sheet-open{overflow:hidden}
 
   // ===================================================================== 演示数据
   // 必须预置：11-01 10kg ¥300（¥30/kg、¥15/500g）；11-03 10kg ¥500（¥50/kg、¥25/500g，+66.67%）
+  var SEED_CATEGORIES = ['宠物', '日化', '母婴', '食品', '其他'];
+
   var SEED_ITEMS = [
     { item_id: 'ITEM-CAT-01', item_name: '网易严选全价猫粮 1.0', category: '宠物', category_tag: '猫粮', brand_tag: '网易严选', series_tag: '1.0', tags: ['猫粮', '网易严选', '1.0'], primary_unit: 'kg', secondary_unit: '500g' },
     { item_id: 'ITEM-CAT-02', item_name: '网易严选全价猫粮 2.0', category: '宠物', category_tag: '猫粮', brand_tag: '网易严选', series_tag: '2.0', tags: ['猫粮', '网易严选', '2.0'], primary_unit: 'kg', secondary_unit: '500g' },
@@ -727,6 +729,7 @@ body.sheet-open{overflow:hidden}
     chart: { type: 'line', scale: 'kg', target: 'cat:猫粮' },
     sandbox: { scale: 'kg', target: 'pool:猫粮~all~', category: '猫粮', brand: 'all', options: SEED_OPTIONS.slice() },
     settingsView: 'menu',
+    categories: SEED_CATEGORIES.slice(),
     scalesCustom: [],
     scalesEdit: {},
     channels: [],
@@ -748,7 +751,8 @@ body.sheet-open{overflow:hidden}
         tab: state.tab, filters: state.filters, viewMode: state.viewMode, sortBy: state.sortBy, sortDir: state.sortDir,
         chart: state.chart, sandbox: state.sandbox, items: state.items, records: state.records,
         customUnits: state.customUnits, feishu: state.feishu,
-        scalesCustom: state.scalesCustom, scalesEdit: state.scalesEdit, channels: state.channels
+        scalesCustom: state.scalesCustom, scalesEdit: state.scalesEdit, channels: state.channels,
+        categories: state.categories
       }));
     } catch (e) { /* 隐私模式下静默失败，不影响使用 */ }
   }
@@ -758,9 +762,10 @@ body.sheet-open{overflow:hidden}
       var raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
       var s = JSON.parse(raw);
-      ['filters', 'viewMode', 'sortBy', 'sortDir', 'chart', 'sandbox', 'items', 'records', 'customUnits', 'feishu', 'scalesCustom', 'scalesEdit', 'channels'].forEach(function (k) {
+      ['filters', 'viewMode', 'sortBy', 'sortDir', 'chart', 'sandbox', 'items', 'records', 'customUnits', 'feishu', 'scalesCustom', 'scalesEdit', 'channels', 'categories'].forEach(function (k) {
         if (s[k] != null) state[k] = s[k];
       });
+      if (!Array.isArray(state.categories) || !state.categories.length) state.categories = SEED_CATEGORIES.slice();
       if (s.tab) state.tab = s.tab;
       if (state.tab === 'home') state.tab = 'todo';
       if (!state.chart || !state.chart.target || state.chart.target === 'all') {
@@ -890,6 +895,22 @@ body.sheet-open{overflow:hidden}
     }
   };
 
+  /** 远端一行是否真的和本次要写的字段不同（用于决定要不要 PUT） */
+  function remoteDiffers(curFields, nextFields) {
+    var keys = ['item_id', 'date', 'platform', 'pack_count', 'unit_qty', 'gift_qty',
+      'amount_unit', 'total_price', 'total_amount', 'price_per_primary', 'price_per_secondary'];
+    var cur = curFields || {};
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var a = cur[k], b = nextFields[k];
+      if (a == null || b == null) { if (String(a == null ? '' : a) !== String(b == null ? '' : b)) return true; continue; }
+      if (typeof b === 'number' || typeof a === 'number') {
+        if (Math.abs(Number(a) - Number(b)) > 0.0005) return true;
+      } else if (String(a) !== String(b)) return true;
+    }
+    return false;
+  }
+
   var Feishu = {
     cfg: function () { return state.feishu; },
     endpoint: function (path) {
@@ -925,6 +946,19 @@ body.sheet-open{overflow:hidden}
       }
       return out;
     },
+    updateRecord: async function (tableId, remoteId, fields) {
+      var f = state.feishu;
+      var tk = await this.token();
+      var r = await fetch(this.endpoint('/open-apis/bitable/v1/apps/' + f.appToken + '/tables/' + tableId +
+        '/records/' + encodeURIComponent(remoteId)), {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ fields: fields })
+      });
+      var j = await r.json();
+      if (j.code !== 0) throw new Error('更新飞书记录失败 ' + j.code + '：' + (j.msg || ''));
+      return j.data.record;
+    },
     createRecord: async function (tableId, fields) {
       var f = state.feishu;
       var tk = await this.token();
@@ -945,11 +979,12 @@ body.sheet-open{overflow:hidden}
         await Mock.delay();
         var db = Mock.read();
         var localIds = db.records.map(function (r) { return r.record_id; });
-        var pushed = 0;
+        var pushed = 0, updated = 0;
         state.records.forEach(function (r) {
           if (localIds.indexOf(r.record_id) === -1) { db.records.push(JSON.parse(JSON.stringify(r))); pushed++; }
           else {
             var idx = db.records.findIndex(function (x) { return x.record_id === r.record_id; });
+            if (JSON.stringify(db.records[idx]) !== JSON.stringify(r)) updated++;
             db.records[idx] = JSON.parse(JSON.stringify(r));
           }
         });
@@ -958,28 +993,42 @@ body.sheet-open{overflow:hidden}
         Mock.write(db);
         var errs = verifyConsistency(state.records, db.feishuRows);
         f.lastSync = new Date().toISOString();
-        f.lastResult = 'mock：推送 ' + pushed + ' 条新增 / 远端共 ' + db.records.length + ' 条 / 字段校验不一致 ' + errs.length + ' 项';
-        if (Math.random() < 0.12) { f.lastResult = 'mock：写入成功，但模拟了一次 429 限流（已重试成功）'; }
+        f.lastResult = 'mock：推送 ' + pushed + ' 条新增 / 更新 ' + updated + ' 条 / 远端共 ' + db.records.length + ' 条 / 字段校验不一致 ' + errs.length + ' 项';
+        if (Math.random() < 0.12) { f.lastResult += '（模拟 429 限流已重试）'; }
         save();
-        return { ok: true, mode: 'mock', pushed: pushed, remote: db.records.length, mismatches: errs, ms: Date.now() - started, msg: f.lastResult };
+        return { ok: true, mode: 'mock', pushed: pushed, updated: updated, remote: db.records.length, mismatches: errs, ms: Date.now() - started, msg: f.lastResult };
       }
       // real
       if (!f.proxyBase) throw new Error('真实模式需要填写代理基址（浏览器直连飞书会触发 CORS）');
       var tk = await this.token();
-      var pushedReal = 0;
+      var pushedReal = 0, updatedReal = 0;
       var existing = await this.listRecords(f.recordsTable);
-      var existIds = existing.map(function (x) { return String((x.fields || {})['record_id'] || ''); });
+      var byRecordId = {};
+      existing.forEach(function (x) {
+        var k = String((x.fields || {})['record_id'] || '');
+        if (k) byRecordId[k] = x;
+      });
       for (var i = 0; i < state.records.length; i++) {
         var rec = state.records[i];
-        if (existIds.indexOf(rec.record_id) !== -1) continue;
-        await this.createRecord(f.recordsTable, recordToFeishu(rec));
-        pushedReal++;
+        var fields = recordToFeishu(rec);
+        var remote = byRecordId[rec.record_id];
+        if (!remote) {
+          var created = await this.createRecord(f.recordsTable, fields);
+          if (created && created.record_id) rec.feishu_id = created.record_id;
+          pushedReal++;
+          continue;
+        }
+        rec.feishu_id = remote.record_id;
+        if (remoteDiffers(remote.fields, fields)) {
+          await this.updateRecord(f.recordsTable, remote.record_id, fields);
+          updatedReal++;
+        }
       }
       var after = await this.listRecords(f.recordsTable);
       f.lastSync = new Date().toISOString();
-      f.lastResult = 'real：新增 ' + pushedReal + ' 条 / 远端共 ' + after.length + ' 条';
+      f.lastResult = 'real：新增 ' + pushedReal + ' 条 / 更新 ' + updatedReal + ' 条 / 远端共 ' + after.length + ' 条';
       save();
-      return { ok: true, mode: 'real', pushed: pushedReal, remote: after.length, ms: Date.now() - started, msg: f.lastResult };
+      return { ok: true, mode: 'real', pushed: pushedReal, updated: updatedReal, remote: after.length, ms: Date.now() - started, msg: f.lastResult };
     }
   };
 
@@ -1174,6 +1223,7 @@ body.sheet-open{overflow:hidden}
         '</div>' +
       '</div>' +
       '<div class="rec-actions">' +
+        '<button class="btn ghost sm" data-edit-rec="' + esc(x.rec.record_id) + '">编辑</button>' +
         '<button class="btn ghost sm" data-rebuy="' + esc(x.rec.record_id) + '">再买</button>' +
         '<button class="btn danger sm" data-del-rec="' + esc(x.rec.record_id) + '" title="删除这条记录">删除</button>' +
       '</div>' +
@@ -1688,10 +1738,11 @@ body.sheet-open{overflow:hidden}
       { k: 'feishu', c: 'c-mint', icon: '🔗', title: '飞书账本', cap: (f.mode === 'mock' ? 'Mock 离线' : '真实 Base') + ' · ' + when },
       { k: 'units', c: 'c-lav', icon: '📐', title: '单位字典', cap: Object.keys(E.UNITS).length + ' 个单位 · 换算系数' },
       { k: 'selftest', c: 'c-yellow', icon: '🧪', title: '数据自检', cap: '商品 ' + state.items.length + ' · 记录 ' + state.records.length + ' · 沙盘 ' + state.sandbox.options.length },
-      { k: 'about', c: 'c-gray', icon: 'ℹ️', title: '关于与数据', cap: '导出 / 导入 / 重置 · v' + APP_VERSION }
+      { k: 'about', c: 'c-gray', icon: 'ℹ️', title: '关于与数据', cap: '导出 / 导入 / 重置 · v' + APP_VERSION },
+      { k: 'cats', c: 'c-peach', icon: '🏷️', title: '分类管理', cap: (state.categories || []).length + ' 个大分类 · 可自定义与排序', wide: true }
     ];
     html += '<div class="bento">' + cards.map(function (x) {
-      return '<button class="card ' + x.c + '" data-sub="' + x.k + '">' +
+      return '<button class="card ' + x.c + (x.wide ? ' wide' : '') + '" data-sub="' + x.k + '">' +
         '<span class="tag">进入</span>' +
         '<span class="icon">' + x.icon + '</span>' +
         '<h3>' + esc(x.title) + '</h3>' +
@@ -1793,12 +1844,43 @@ body.sheet-open{overflow:hidden}
     $('#view').innerHTML = html;
   }
 
+  function renderSettingsCategories() {
+    var list = (state.categories && state.categories.length) ? state.categories : SEED_CATEGORIES;
+    var html = settingsHeader('分类管理', '大分类 · 自定义与排序');
+    html += '<div class="panel"><div class="note">这里就是「新增记录 → 大类」下拉里的选项，顺序即下拉顺序。改名会同步更新已有商品；上下箭头调整位置，改完点保存。</div>' +
+      '<div id="catList">' +
+      list.map(function (name, i) {
+        return '<div class="row cat-row" style="margin-top:8px;gap:8px">' +
+          '<span class="chip sm" style="min-width:28px;justify-content:center">' + (i + 1) + '</span>' +
+          '<input class="cat-name" data-idx="' + i + '" value="' + esc(name) + '" style="flex:1;min-width:0"/>' +
+          '<button class="btn ghost sm" data-cat-op="up" data-idx="' + i + '" title="上移">↑</button>' +
+          '<button class="btn ghost sm" data-cat-op="down" data-idx="' + i + '" title="下移">↓</button>' +
+          '<button class="btn danger sm" data-cat-op="del" data-idx="' + i + '" title="删除">✕</button>' +
+          '</div>';
+      }).join('') +
+      '</div>' +
+      '<div class="row wrap" style="margin-top:12px">' +
+        '<button class="btn ghost sm" data-cat-op="add">＋ 新增分类</button>' +
+        '<button class="btn sm" data-cat-op="save">保存分类</button>' +
+      '</div>' +
+      '<div class="hr"></div><div class="note" style="color:var(--ink-4)">商品 ' + state.items.length + ' 个，用到的分类：' +
+        (function () {
+          var used = {};
+          state.items.forEach(function (it) { used[it.category || '未分类'] = (used[it.category || '未分类'] || 0) + 1; });
+          var ks = Object.keys(used);
+          return ks.length ? ks.map(function (k) { return esc(k) + '×' + used[k]; }).join(' · ') : '—';
+        })() +
+      '</div></div>';
+    $('#view').innerHTML = html;
+  }
+
   function renderSettings() {
     var v = state.settingsView || 'menu';
     if (v === 'feishu') return renderSettingsFeishu();
     if (v === 'units') return renderSettingsUnits();
     if (v === 'selftest') return renderSettingsSelfTest();
     if (v === 'about') return renderSettingsAbout();
+    if (v === 'cats') return renderSettingsCategories();
     return renderSettingsMenu();
   }
 
@@ -1818,7 +1900,8 @@ body.sheet-open{overflow:hidden}
   function openRecordSheet(prefill) {
     var p = prefill || {};
     var isRebuy = !!p.rebuyOf;
-    var html = '<div class="grab"></div><h3>' + (isRebuy ? '一键再买 · 更新价格' : '新增购买记录') + '</h3>';
+    var isEdit = !!p.editOf;
+    var html = '<div class="grab"></div><h3>' + (isEdit ? '编辑购买记录' : isRebuy ? '一键再买 · 更新价格' : '新增购买记录') + '</h3>';
     html += '<form id="recForm">';
     if (!isRebuy) {
       html += '<label class="field"><span>已有商品</span><select id="rItem"><option value="">＋ 新建商品</option>' +
@@ -1828,7 +1911,7 @@ body.sheet-open{overflow:hidden}
       html += '<div id="newItemBox" class="' + (p.itemId ? 'hidden' : '') + '">' +
         '<div class="grid2">' +
           '<label class="field"><span>商品名</span><input id="niName" placeholder="如 网易严选全价猫粮 3.0"/></label>' +
-          '<label class="field"><span>大类</span><select id="niCategory"><option>宠物</option><option>日化</option><option>母婴</option><option>食品</option><option>其他</option></select></label>' +
+          '<label class="field"><span>大类</span><select id="niCategory">' + catOptions(p.category) + '</select></label>' +
           '<label class="field"><span>品类标签</span><input id="niCat" placeholder="猫粮" autocomplete="off"/><div class="sug" id="sugCat"></div></label>' +
           '<label class="field"><span>品牌标签</span><input id="niBrand" placeholder="网易严选" autocomplete="off"/><div class="sug" id="sugBrand"></div></label>' +
 
@@ -1856,7 +1939,7 @@ body.sheet-open{overflow:hidden}
         '</div></label>' +
     '</div>';
     html += '<div class="prev" id="rPrev"></div>';
-    html += '<div class="row"><button type="submit" class="btn block">保存记录</button>' +
+    html += '<div class="row"><button type="submit" class="btn block">' + (isEdit ? '保存修改' : '保存记录') + '</button>' +
       '<button type="button" class="btn ghost" data-close="1">取消</button></div>';
     html += '</form>';
     showSheet(html);
@@ -1981,19 +2064,84 @@ body.sheet-open{overflow:hidden}
         };
         state.items.push(item);
       }
-      var rec = {
-        record_id: nextId('REC-', state.records, 'record_id'),
-        feishu_id: '',
+      var fields = {
         item_id: item.item_id,
         date: $('#rDate').value || today(),
         platform: ($('#rPlatform').value || '').trim() || '未填渠道',
         pack_count: pack, unit_qty: qty, gift_qty: gift, amount_unit: unit, gift_unit: giftUnit,
         total_price: price
       };
+      var rec;
+      if (isEdit) {
+        rec = state.records.filter(function (x) { return x.record_id === p.editOf; })[0];
+        if (!rec) { closeSheet(); render(); toast('记录不存在，可能已被删除'); return; }
+        Object.keys(fields).forEach(function (k) { rec[k] = fields[k]; });
+        closeSheet(); render();
+        toast('已更新：' + E.money(E.computeRecord(rec, item).pricePerPrimary) + E.computeRecord(rec, item).primaryShort + '（记得同步飞书）');
+        return;
+      }
+      rec = Object.assign({ record_id: nextId('REC-', state.records, 'record_id'), feishu_id: '' }, fields);
       state.records.push(rec);
       closeSheet(); render();
       toast('已保存：' + E.money(E.computeRecord(rec, item).pricePerPrimary) + E.computeRecord(rec, item).primaryShort + '（记得同步飞书）');
     });
+  }
+
+  /** 大分类下拉：顺序即 state.categories 顺序 */
+  function catOptions(selected) {
+    var list = (state.categories && state.categories.length) ? state.categories : SEED_CATEGORIES;
+    var html = list.map(function (c) {
+      return '<option value="' + esc(c) + '"' + (c === selected ? ' selected' : '') + '>' + esc(c) + '</option>';
+    }).join('');
+    if (selected && list.indexOf(selected) === -1) {
+      html = '<option value="' + esc(selected) + '" selected>' + esc(selected) + '</option>' + html;
+    }
+    return html;
+  }
+
+  /** 分类管理：上移 / 下移 / 删除 / 新增 / 保存 */
+  function catAction(op, idx) {
+    var list = state.categories.slice();
+    if (op === 'add') {
+      var n = 1, name = '新分类';
+      while (list.indexOf(name) !== -1) { n++; name = '新分类 ' + n; }
+      list.push(name);
+      state.categories = list; save(); renderSettings(); return;
+    }
+    if (op === 'up' && idx > 0) {
+      var t1 = list[idx]; list[idx] = list[idx - 1]; list[idx - 1] = t1;
+      state.categories = list; save(); renderSettings(); return;
+    }
+    if (op === 'down' && idx < list.length - 1) {
+      var t2 = list[idx]; list[idx] = list[idx + 1]; list[idx + 1] = t2;
+      state.categories = list; save(); renderSettings(); return;
+    }
+    if (op === 'del') {
+      var using = state.items.filter(function (it) { return it.category === list[idx]; }).length;
+      list.splice(idx, 1);
+      if (!list.length) { toast('至少保留一个分类'); return; }
+      state.categories = list; save(); renderSettings();
+      toast(using ? '已删除；有 ' + using + ' 个商品仍记着旧分类' : '已删除分类');
+      return;
+    }
+    if (op === 'save') {
+      var inputs = $$('#catList .cat-name');
+      var next = [];
+      inputs.forEach(function (el) {
+        var v = String(el.value || '').trim();
+        if (v && next.indexOf(v) === -1) next.push(v);
+      });
+      if (!next.length) { toast('分类名不能为空'); return; }
+      var prev = state.categories.slice();
+      next.forEach(function (n2, i) {
+        var o = prev[i];
+        if (o && o !== n2) {
+          state.items.forEach(function (it) { if (it.category === o) it.category = n2; });
+        }
+      });
+      state.categories = next; save(); render(); toast('分类已保存：' + next.join(' / '));
+      return;
+    }
   }
 
   function primaryOptions(unitKey, selected) {
@@ -2292,7 +2440,7 @@ body.sheet-open{overflow:hidden}
   }
 
   document.addEventListener('click', function (ev) {
-    var t = ev.target.closest('[data-sub],[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-del-rec],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-act],[data-del-opt],[data-archive],[data-close]');
+    var t = ev.target.closest('[data-sub],[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-del-rec],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-edit-rec],[data-cat-op],[data-act],[data-del-opt],[data-archive],[data-close]');
     if (!t) return;
     var nav = t.getAttribute('data-nav');
     if (nav) { state.tab = nav; window.scrollTo({ top: 0 }); render(); return; }
@@ -2391,6 +2539,24 @@ body.sheet-open{overflow:hidden}
       openRecordSheet({ rebuyOf: r.record_id, itemId: r.item_id, itemName: it.item_name, date: today(), platform: r.platform, pack_count: r.pack_count, unit_qty: r.unit_qty, gift_qty: r.gift_qty, unit: r.amount_unit, primary: it.primary_unit });
       return;
     }
+
+    var editRec = t.getAttribute('data-edit-rec');
+    if (editRec) {
+      var er = state.records.filter(function (x) { return x.record_id === editRec; })[0];
+      var eit = er ? itemById(er.item_id) : null;
+      if (!er) { toast('记录不存在'); return; }
+      openRecordSheet({
+        editOf: er.record_id, itemId: er.item_id, itemName: eit ? eit.item_name : '',
+        date: er.date, platform: er.platform, price: er.total_price,
+        pack_count: er.pack_count, unit_qty: er.unit_qty, gift_qty: er.gift_qty,
+        unit: er.amount_unit, gift_unit: er.gift_unit || er.amount_unit,
+        primary: eit ? eit.primary_unit : er.amount_unit
+      });
+      return;
+    }
+
+    var catOp = t.getAttribute('data-cat-op');
+    if (catOp) { catAction(catOp, Number(t.getAttribute('data-idx'))); return; }
 
     var delRec = t.getAttribute('data-del-rec');
     if (delRec) { deleteRecord(delRec); return; }
