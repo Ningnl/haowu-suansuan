@@ -254,9 +254,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);backgrou
 .sheet{
   position:fixed;left:50%;transform:translateX(-50%) translateY(100%);bottom:0;width:min(720px,100%);
   background:var(--bg);border-radius:26px 26px 0 0;padding:18px 16px calc(22px + var(--safe-b));
-  z-index:70;max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contain;transition:transform .28s cubic-bezier(.22,.8,.3,1);
+  z-index:70;max-height:92vh;max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;transition:transform .28s cubic-bezier(.22,.8,.3,1);
 }
 .sheet.show{transform:translateX(-50%) translateY(0)}
+body.sheet-open{overflow:hidden}
+.sheet-top{position:sticky;top:-18px;margin:-18px -16px 6px;padding:10px 12px 4px;display:flex;justify-content:flex-end;background:linear-gradient(var(--bg) 70%,rgba(247,245,238,0));z-index:6}
+.sheet-close{width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--line);color:var(--ink-2);font-size:15px;font-weight:700;display:grid;place-items:center;box-shadow:0 2px 8px rgba(90,72,52,.10)}
+.sheet-close:active{transform:scale(.94)}
 .sheet h3{margin:2px 0 14px;font-size:17px}
 .sheet .grab{width:38px;height:4px;border-radius:2px;background:#DCD5C7;margin:0 auto 12px}
 .prev{background:var(--mint);border-radius:16px;padding:12px 14px;margin:6px 0 12px;color:var(--mint-ink)}
@@ -670,7 +674,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);backgrou
   };
 });
 </script>
-<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T10:12:35.006Z',builder:'DeepSeek Harness (nyx)'};
+<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T10:17:16.832Z',builder:'DeepSeek Harness (nyx)'};
 /* =========================================================================
  * T-020 v1.1 · 应用层（UI / 状态 / 飞书联调）
  * 依赖：window.T020Engine（计价引擎）、可选 window.echarts（图表，失败自动降级 SVG）
@@ -1894,13 +1898,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);backgrou
   function showSheet(html) {
     clearTimeout(showSheet._clear);
     var s = $('#sheet');
-    s.innerHTML = html;
+    s.innerHTML = '<div class="sheet-top"><button type="button" class="sheet-close" data-close="1" aria-label="关闭">✕</button></div>' + html;
     s.classList.add('show');
     $('#mask').classList.add('show');
+    document.body.classList.add('sheet-open');
   }
   function closeSheet() {
     $('#sheet').classList.remove('show');
     $('#mask').classList.remove('show');
+    document.body.classList.remove('sheet-open');
     clearTimeout(showSheet._clear);
     showSheet._clear = setTimeout(function () {
       var s = $('#sheet');
@@ -2255,6 +2261,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);backgrou
     var arc = t.getAttribute('data-archive');
     if (arc) { archiveOption(arc); return; }
 
+    if (t.getAttribute('data-close') != null) { closeSheet(); return; }
     var act = t.getAttribute('data-act');
     if (!act) return;
     if (act === 'new-record') { openRecordSheet({}); return; }
@@ -2271,8 +2278,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);backgrou
     }
     if (act === 'add-unit') { addUnit(); return; }
     if (act === 'selftest') { runSelfTest(); return; }
-    var close = t.getAttribute('data-close');
-    if (close) { closeSheet(); return; }
   });
 
   // 搜索框
