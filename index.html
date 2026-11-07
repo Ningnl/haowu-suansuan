@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F7F5EE" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="description" content="T-020 日常消耗品单价追踪与智能比价轻应用 v1.1" />
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIuWlveeJqeeul+eulyDCtyDml6XluLjmtojogJflk4HljZXku7fov73ouKrkuI7mmbrog73mr5Tku7ciLCAic2hvcnRfbmFtZSI6ICLlpb3niannrpfnrpciLCAiZGVzY3JpcHRpb24iOiAiVC0wMjAgdjEuMSDml6XluLjmtojogJflk4HljZXku7fov73ouKrkuI7mmbrog73mr5Tku7fovbvlupTnlKgiLCAic3RhcnRfdXJsIjogIi4iLCAic2NvcGUiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjRjdGNUVFIiwgInRoZW1lX2NvbG9yIjogIiNGN0Y1RUUiLCAibGFuZyI6ICJ6aC1DTiIsICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCJ9" />
+<title>好物算算 · 日常消耗品单价追踪与智能比价 v1.1</title>
+<style>
+/* ============================ 设计 Tokens（「王贝」暖奶油风） ============================ */
+:root{
+  --bg:#F7F5EE; --card:#FFFFFF; --ink:#2B2623; --ink-2:#635C55; --ink-3:#7C7670; --ink-4:#8E8A83;
+  --line:#E7E1D4; --accent:#C86D44; --accent-deep:#CF7A50;
+  --yellow:#F5ECC8; --yellow-ink:#635022;
+  --mint:#DCF0EB; --mint-ink:#2D6A62;
+  --sand:#EFE5D4; --sand-ink:#6E4826;
+  --peach:#F6DFD2; --peach-ink:#8A4223;
+  --pink:#F6DFEA; --pink-ink:#802F54;
+  --lav:#EAE3F7; --lav-ink:#4D3B7C;
+  --gray:#EAE3D2; --gray-ink:#594933;
+  --good:#2F7A57; --good-bg:#E4F1E9; --bad:#B0432F; --bad-bg:#FAE6DF;
+  --radius:24px; --radius-sm:16px; --shadow:0 10px 28px rgba(90,72,52,.08);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;overflow-x:hidden}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:15px; line-height:1.55;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+.app{max-width:720px;margin:0 auto;padding:18px 16px calc(104px + var(--safe-b))}
+.serif{font-family:"Songti SC","Noto Serif SC",Georgia,serif}
+
+/* ---------- 顶部标题 ---------- */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 14px}
+.head h1{margin:0;font-size:28px;line-height:1.2;letter-spacing:.5px;font-weight:800}
+.head p{margin:4px 0 0;font-size:13px;color:var(--ink-3)}
+.head .ver{font-size:11px;color:#fff;background:var(--accent);border-radius:999px;padding:3px 9px;letter-spacing:.4px}
+
+/* ---------- 顶部状态横幅 ---------- */
+.banner{
+  background:#fff;border:1.5px solid var(--accent-deep);border-radius:var(--radius);
+  padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);
+}
+.banner .mascot{
+  width:46px;height:46px;flex:0 0 46px;border-radius:50%;background:var(--mint);
+  display:grid;place-items:center;font-size:22px;
+}
+.banner .mid{flex:1;min-width:0;overflow:hidden}
+.banner .mid .k{font-size:12px;color:var(--ink-3);letter-spacing:.3px}
+.banner .mid .v{font-size:19px;font-weight:800;color:var(--accent);letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.banner .mid .s{font-size:11.5px;color:var(--ink-4);margin-top:2px}
+.banner .divider{width:1px;height:34px;background:var(--line)}
+.banner .cal{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--accent);font-size:11px}
+.banner .cal b{font-size:15px}
+
+/* ---------- Bento 卡片 ---------- */
+.bento{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:16px 0}
+.card{
+  position:relative;border-radius:var(--radius);padding:16px;min-height:132px;
+  display:flex;flex-direction:column;gap:8px;overflow:hidden;text-align:left;min-width:0;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.card:active{transform:scale(.985)}
+.card:hover{box-shadow:0 12px 24px rgba(90,72,52,.12)}
+.card .icon{
+  width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;
+  font-size:20px;box-shadow:0 2px 8px rgba(90,72,52,.10);
+}
+.card .tag{
+  position:absolute;top:14px;right:12px;background:#fff;color:var(--ink-2);
+  font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.3px;
+}
+.card h3{margin:0;font-size:15px;font-weight:800;letter-spacing:.2px}
+.card .num{font-size:22px;font-weight:800;line-height:1.15;letter-spacing:.2px;overflow-wrap:anywhere}
+.card .cap{font-size:11.5px;opacity:.78;line-height:1.45}
+.card.wide{grid-column:1 / -1;min-height:auto}
+.c-yellow{background:var(--yellow);color:var(--yellow-ink)} .c-yellow h3,.c-yellow .num{color:var(--yellow-ink)}
+.c-mint{background:var(--mint);color:var(--mint-ink)} .c-mint h3,.c-mint .num{color:var(--mint-ink)}
+.c-sand{background:var(--sand);color:var(--sand-ink)} .c-sand h3,.c-sand .num{color:var(--sand-ink)}
+.c-peach{background:var(--peach);color:var(--peach-ink)} .c-peach h3,.c-peach .num{color:var(--peach-ink)}
+.c-pink{background:var(--pink);color:var(--pink-ink)} .c-pink h3,.c-pink .num{color:var(--pink-ink)}
+.c-lav{background:var(--lav);color:var(--lav-ink)} .c-lav h3,.c-lav .num{color:var(--lav-ink)}
+.c-gray{background:var(--gray);color:var(--gray-ink)} .c-gray h3,.c-gray .num{color:var(--gray-ink)}
+
+/* ---------- 小节标题 ---------- */
+.sec-title{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px}
+.sec-title h2{margin:0;font-size:16px;font-weight:800;letter-spacing:.3px}
+.sec-title .hint{font-size:11.5px;color:var(--ink-4)}
+
+/* ---------- 通用控件 ---------- */
+.panel{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);min-width:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  padding:7px 13px;border-radius:999px;background:#fff;border:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-2);font-weight:600;transition:.15s;
+}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.sub{background:#FBF9F3}
+.chip.sub.on{background:var(--accent-deep)}
+.chip.sm{padding:5px 11px;font-size:11.5px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spacer{flex:1}
+.search{
+  width:100%;background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:11px 14px 11px 38px;font-size:14px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238E8A83' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:14px center;
+}
+.search:focus{border-color:var(--accent-deep)}
+.btn{
+  padding:11px 16px;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;font-size:13.5px;
+  display:inline-flex;align-items:center;gap:6px;justify-content:center;
+}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+.btn.danger{background:var(--bad-bg);color:var(--bad)}
+.btn.sm{padding:8px 12px;font-size:12.5px;border-radius:12px}
+.btn.block{width:100%}
+.seg{display:inline-flex;background:#F0EBE0;border-radius:999px;padding:3px}
+.seg button{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;color:var(--ink-3)}
+.seg button.on{background:#fff;color:var(--accent);box-shadow:0 2px 6px rgba(90,72,52,.10)}
+label.field{display:block;margin-bottom:10px}
+label.field span{display:block;font-size:11.5px;color:var(--ink-3);margin-bottom:4px;font-weight:600}
+input,select,textarea{
+  width:100%;background:#FBF9F3;border:1px solid var(--line);border-radius:12px;
+  padding:10px 12px;font-size:14px;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent-deep);background:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+/* ---------- 两级筛选条 / 深色主按钮 / FAB ---------- */
+.filter-bar{height:44px;display:flex;align-items:center;gap:8px;margin:4px 0 12px}
+.filter-pill{
+  height:44px;flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 14px;font-size:13px;font-weight:700;color:var(--ink-2);
+  box-shadow:0 2px 8px rgba(90,72,52,.05);
+}
+.filter-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filter-pill i{font-style:normal;color:var(--ink-4);font-size:11px}
+.filter-icon{
+  height:44px;width:44px;flex:0 0 44px;border-radius:999px;background:#fff;border:1px solid var(--line);
+  display:grid;place-items:center;font-size:15px;box-shadow:0 2px 8px rgba(90,72,52,.05);
+}
+.filter-icon.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.dark{background:var(--ink);color:#fff;border-radius:999px;font-size:13px;padding:9px 14px;white-space:nowrap}
+.fab{
+  position:fixed;right:calc(50% - min(360px, 50vw) + 18px);bottom:calc(92px + var(--safe-b));
+  width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;font-size:24px;font-weight:700;
+  display:grid;place-items:center;box-shadow:0 10px 22px rgba(200,109,68,.38);z-index:45;
+}
+.fab:active{transform:scale(.95)}
+.bench-card .bench-num{font-size:26px;font-weight:800;letter-spacing:.3px;margin:2px 0}
+.bench-card .bench-num .unit{font-size:13px;font-weight:700;margin-left:2px}
+.bench-card .bench-num .sub{font-size:13px;font-weight:600;color:var(--ink-3);margin-left:6px}
+.rec-hl{outline:2px solid var(--accent);outline-offset:2px}
+.opt.c-mint,.opt.c-peach,.opt.c-yellow,.opt.c-sand{box-shadow:none}
+.opt.c-mint{background:var(--mint)} .opt.c-mint .field span,.opt.c-mint .note{color:var(--mint-ink)}
+.opt.c-peach{background:var(--peach)} .opt.c-peach .field span,.opt.c-peach .note{color:var(--peach-ink)}
+.opt.c-yellow{background:var(--yellow)} .opt.c-yellow .field span,.opt.c-yellow .note{color:var(--yellow-ink)}
+.opt.c-sand{background:var(--sand)} .opt.c-sand .field span,.opt.c-sand .note{color:var(--sand-ink)}
+.opt input,.opt select{background:rgba(255,255,255,.72);border-color:rgba(255,255,255,.9)}
+
+/* ---------- 记录卡片 / 表格 ---------- */
+.rec-list{display:flex;flex-direction:column;gap:12px}
+.rec{
+  background:#fff;border-radius:20px;padding:14px 16px;box-shadow:var(--shadow);
+  display:flex;gap:12px;align-items:flex-start;
+}
+.rec .left{flex:1;min-width:0}
+.rec .name{font-weight:800;font-size:14.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+.rec .meta{font-size:11.5px;color:var(--ink-4);margin-top:2px}
+.rec .prices{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.pill{background:#F7F3E9;border-radius:10px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)}
+.pill b{font-size:13px;color:var(--ink)}
+.pill.main{background:var(--mint);color:var(--mint-ink)}
+.pill.main b{color:var(--mint-ink)}
+.badge{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:#F0EBE0;color:var(--ink-3)}
+.badge.good{background:var(--good-bg);color:var(--good)}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}
+.badge.flat{background:#EFEAE0;color:var(--ink-3)}
+.tagline{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.tagline span{font-size:10.5px;color:var(--accent);background:#FBF1EA;padding:2px 7px;border-radius:999px}
+.tbl{width:100%;min-width:620px;border-collapse:collapse;background:#fff;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);font-size:12.5px}
+.tbl th{background:#F5EFE3;text-align:left;padding:10px 10px;font-weight:700;color:var(--ink-2);white-space:nowrap;font-size:11.5px}
+.tbl td{padding:10px;border-top:1px solid #F2EDE2;vertical-align:top}
+.tbl th:nth-child(1),.tbl td:nth-child(1){min-width:78px}
+.tbl th:nth-child(2),.tbl td:nth-child(2){min-width:148px}
+.tbl th:nth-child(3),.tbl td:nth-child(3){min-width:96px}
+.tbl tr:hover td{background:#FCFAF4}
+.tbl .num{white-space:nowrap;font-variant-numeric:tabular-nums}
+.table-wrap{overflow-x:auto;border-radius:18px}
+
+/* ---------- 空状态 ---------- */
+.empty{background:#fff;border-radius:20px;padding:34px 20px;text-align:center;color:var(--ink-4);box-shadow:var(--shadow)}
+.empty .ic{font-size:30px;margin-bottom:8px}
+
+/* ---------- 待购比价 ---------- */
+.opt{background:#fff;border-radius:20px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.opt-head{display:flex;align-items:center;gap:8px}
+.opt-head b{font-size:14px}
+.opt.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.result{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:#FBF9F3;margin-top:10px}
+.result.best{background:var(--mint);}
+.result .rank{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--accent)}
+.result .up{font-size:18px;font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.verdict{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px}
+.verdict.good{background:var(--good-bg);color:var(--good)}
+.verdict.bad{background:var(--bad-bg);color:var(--bad)}
+.verdict.flat{background:#EFEAE0;color:var(--ink-3)}
+.verdict.unknown{background:#EFEAE0;color:var(--ink-3)}
+
+/* ---------- 图表 ---------- */
+.chart-box{background:#fff;border-radius:20px;padding:12px;box-shadow:var(--shadow)}
+#chart{width:100%;height:300px}
+.chart-fallback{width:100%;height:300px}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.stat{background:#FBF7EE;border-radius:14px;padding:9px 8px;text-align:center}
+.stat .k{font-size:10.5px;color:var(--ink-4)}
+.stat .v{font-size:15px;font-weight:800;color:var(--ink)}
+
+/* ---------- 导航 ---------- */
+.nav{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + var(--safe-b));
+  width:min(688px,calc(100% - 24px));background:#fff;border-radius:24px;
+  box-shadow:0 -2px 24px rgba(90,72,52,.12);display:grid;grid-template-columns:repeat(4,1fr);
+  padding:8px 6px;z-index:40;
+}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--ink-4);font-size:10.5px;font-weight:600;border-radius:16px}
+.nav button svg{width:22px;height:22px}
+.nav button.on{color:var(--accent)}
+.nav button.on .dot{opacity:1}
+.nav .dot{width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:0}
+
+/* ---------- Toast / Modal ---------- */
+#toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%) translateY(12px);
+  background:rgba(43,38,35,.94);color:#fff;padding:10px 16px;border-radius:14px;font-size:12.5px;
+  opacity:0;pointer-events:none;transition:.22s;z-index:80;max-width:86%;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.mask{position:fixed;inset:0;background:rgba(43,38,35,.42);backdrop-filter:blur(2px);z-index:60;display:none}
+.mask.show{display:block}
+.sheet{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(100%);bottom:0;width:min(720px,100%);
+  background:var(--bg);border-radius:26px 26px 0 0;padding:18px 16px calc(22px + var(--safe-b));
+  z-index:70;max-height:92vh;overflow:auto;transition:transform .28s cubic-bezier(.22,.8,.3,1);
+}
+.sheet.show{transform:translateX(-50%) translateY(0)}
+.sheet h3{margin:2px 0 14px;font-size:17px}
+.sheet .grab{width:38px;height:4px;border-radius:2px;background:#DCD5C7;margin:0 auto 12px}
+.prev{background:var(--mint);border-radius:16px;padding:12px 14px;margin:6px 0 12px;color:var(--mint-ink)}
+.prev .big{font-size:22px;font-weight:800}
+.prev .sub{font-size:11.5px;opacity:.8}
+
+/* ---------- 杂项 ---------- */
+.note{font-size:11.5px;color:var(--ink-4);line-height:1.6}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--ink-4)}
+.status-dot.ok{background:var(--good)} .status-dot.warn{background:#D9A24A} .status-dot.err{background:var(--bad)}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;background:#F3EEE2;padding:2px 6px;border-radius:6px}
+.hidden{display:none !important}
+.hr{height:1px;background:var(--line);margin:14px 0}
+.pill-units{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.scale-chip{display:inline-flex;align-items:center;gap:4px}
+.scale-chip .pen{font-style:normal;font-size:11px;opacity:.55;padding:0 2px;border-radius:6px}
+.scale-chip .pen:hover{opacity:1;background:rgba(0,0,0,.06)}
+.chip.add-scale{font-size:14px;padding:4px 10px}
+.sug{display:none;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sug .chip{font-size:11px;padding:4px 9px;background:#FBF1EA;border-color:#F0DCCB;color:var(--accent)}
+.sug .chip:active{background:var(--accent);color:#fff}
+.select-like{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#FBF9F3;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;text-align:left;min-height:44px;color:var(--ink)}
+.select-like > span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.select-like .ph{color:#A39A8C}
+.select-like .chev{font-style:normal;color:var(--ink-4);font-size:13px}
+.pick-list{max-height:46vh;overflow:auto;margin:10px 0 0;border-radius:16px;background:#fff;box-shadow:0 2px 10px rgba(90,72,52,.06)}
+.pick-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 16px;font-size:14px;color:var(--ink);text-align:left;background:#fff}
+.pick-row + .pick-row{border-top:1px solid #F4EFE6}
+.pick-row.on{color:var(--accent);font-weight:800;background:#FBF6F0}
+.pick-row .tick{font-style:normal;color:var(--accent);opacity:0;font-weight:800}
+.pick-row.on .tick{opacity:1}
+.add-row{margin-top:10px;border-radius:14px;border:1px dashed #E4D6C6;color:var(--accent);font-weight:700;justify-content:center}
+.chan-input{max-width:210px;padding:7px 12px;border-radius:999px;font-size:12.5px}
+.add-chan{border-style:dashed;color:var(--accent)}
+@media (max-width:400px){
+  .head h1{font-size:24px}
+  .card .num{font-size:21px}
+  .grid3{grid-template-columns:1fr 1fr}
+  .stat-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <main id="view"></main>
+</div>
+
+<nav class="nav" id="nav">
+  <button data-tab="todo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18l-1.6 11.2a2 2 0 0 1-2 1.8H8.6a2 2 0 0 1-2-1.8L5 8"/><path d="M9 10v4M15 10v4"/><circle cx="12" cy="5" r="1.4"/></svg>
+    <span>待购比价</span><i class="dot"></i>
+  </button>
+  <button data-tab="review">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-5 3 3 4-6"/></svg>
+    <span>复盘走势</span><i class="dot"></i>
+  </button>
+  <button data-tab="track">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 12h6M9 16h4"/></svg>
+    <span>已购台账</span><i class="dot"></i>
+  </button>
+  <button data-tab="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 14a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7L4.5 7a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1A1.6 1.6 0 0 0 16.7 4.6l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+    <span>设置</span><i class="dot"></i>
+  </button>
+</nav>
+
+<div id="toast"></div>
+<div class="mask" id="mask"></div>
+<div class="sheet" id="sheet"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" onerror="window.__echartsFailed=true"></script>
+<script>/*! T-020 日常消耗品比价轻应用 v1.1 · 单文件 H5 PWA
+ *  交付：DeepSeek Harness（nyx）· 2026-11-07
+ *  说明：本文件为构建产物，源码见 t020/src/（engine.js / app.js / template.html）
+ *  含：双基准均价引擎、三级筛选、待购比价沙盘、ECharts 走势、飞书 Bitable 双表适配器
+ */
+/* =========================================================================
+ * T-020 日常消耗品比价轻应用 · 计价引擎 v1.1
+ * 纯函数模块：不依赖 DOM，可在浏览器与 Node 下直接运行（便于自动化自测）。
+ * 核心：把任意包装规格（件数 × 单件量 + 赠品）折算成原子量（g / ml / 抽 / 个 / m），
+ *       再按目标基准（每 kg、每 500g、每 100g、每 100 抽……）输出均价。
+ * ========================================================================= */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  root.T020Engine = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  // ---------------------------------------------------------------- 单位字典
+  // factor：1 个该单位 = factor 个原子量。原子量由 group 决定（g / ml / 抽 / 个 / m）。
+  var UNITS = {
+    // 重量（原子量 g）
+    g:      { label: '克(g)',        group: 'weight', factor: 1 },
+    kg:     { label: '千克(kg)',     group: 'weight', factor: 1000 },
+    '500g': { label: '500克/斤',     group: 'weight', factor: 500 },
+    '100g': { label: '100克',        group: 'weight', factor: 100 },
+    '50g':  { label: '两(50g)',      group: 'weight', factor: 50 },
+    mg:     { label: '毫克(mg)',     group: 'weight', factor: 0.001 },
+    lb:     { label: '磅(lb)',       group: 'weight', factor: 453.59237 },
+    oz:     { label: '盎司(oz)',     group: 'weight', factor: 28.349523 },
+    t:      { label: '吨(t)',        group: 'weight', factor: 1000000 },
+    // 容量（原子量 ml）
+    ml:     { label: '毫升(ml)',     group: 'volume', factor: 1 },
+    L:      { label: '升(L)',        group: 'volume', factor: 1000 },
+    '500ml':{ label: '500毫升',      group: 'volume', factor: 500 },
+    '100ml':{ label: '100毫升',      group: 'volume', factor: 100 },
+    gal:    { label: '加仑(gal)',    group: 'volume', factor: 3785.411784 },
+    qt:     { label: '夸脱(qt)',     group: 'volume', factor: 946.352946 },
+    floz:   { label: '液量盎司(fl oz)', group: 'volume', factor: 29.57353 },
+    // 抽张/片数（原子量 抽）
+    chou:   { label: '抽',           group: 'sheet', factor: 1 },
+    '100chou': { label: '100抽',     group: 'sheet', factor: 100 },
+    zhang:  { label: '张',           group: 'sheet', factor: 1 },
+    '100zhang': { label: '100张',    group: 'sheet', factor: 100 },
+    pian:   { label: '片',           group: 'sheet', factor: 1 },
+    '10pian': { label: '10片',       group: 'sheet', factor: 10 },
+    jie:    { label: '节',           group: 'sheet', factor: 1 },
+    juan:   { label: '卷',           group: 'sheet', factor: 1 },
+    // 计件（原子量 个）
+    ge:     { label: '个',           group: 'count', factor: 1 },
+    bao:    { label: '包',           group: 'count', factor: 1 },
+    ti:     { label: '提',           group: 'count', factor: 1 },
+    xiang:  { label: '箱',           group: 'count', factor: 1 },
+    dai:    { label: '袋',           group: 'count', factor: 1 },
+    guan:   { label: '罐',           group: 'count', factor: 1 },
+    ping:   { label: '瓶',           group: 'count', factor: 1 },
+    he:     { label: '盒',           group: 'count', factor: 1 },
+    tiao:   { label: '条',           group: 'count', factor: 1 },
+    jian:   { label: '件',           group: 'count', factor: 1 },
+    li:     { label: '粒',           group: 'count', factor: 1 },
+    ke:     { label: '颗',           group: 'count', factor: 1 },
+    zhi:    { label: '支',           group: 'count', factor: 1 },
+    kuai:   { label: '块',           group: 'count', factor: 1 },
+    shuang: { label: '双',           group: 'count', factor: 1 },
+    tie:    { label: '贴',           group: 'count', factor: 1 },
+    ci:     { label: '次',           group: 'count', factor: 1 },
+    // 长度/面积（原子量 m）
+    m:      { label: '米(m)',         group: 'length', factor: 1 },
+    cm:     { label: '厘米(cm)',      group: 'length', factor: 0.01 },
+    m2:     { label: '平方米(㎡)',    group: 'length', factor: 1 }
+  };
+
+  // 展示基准：同一原子量下，按不同基准输出的「每单位价钱」
+  var SCALES = {
+    weight: [
+      { key: 'kg',    label: '每 1 千克(kg)',   short: '/kg',    atomic: 1000, unit: 'kg' },
+      { key: '500g',  label: '每 500 克(斤)',   short: '/500g',  atomic: 500,  unit: '500g' },
+      { key: '100g',  label: '每 100 克',       short: '/100g',  atomic: 100,  unit: '100g' },
+      { key: 'lb',    label: '每 1 磅(lb)',     short: '/lb',    atomic: 453.59237, unit: 'lb' }
+    ],
+    volume: [
+      { key: 'L',     label: '每 1 升(L)',      short: '/L',     atomic: 1000, unit: 'L' },
+      { key: '500ml', label: '每 500 毫升',     short: '/500ml', atomic: 500,  unit: '500ml' },
+      { key: '100ml', label: '每 100 毫升',     short: '/100ml', atomic: 100,  unit: '100ml' }
+    ],
+    sheet: [
+      { key: '100chou', label: '每 100 抽',     short: '/100抽', atomic: 100, unit: '100chou' },
+      { key: 'chou',    label: '每 1 抽',       short: '/抽',    atomic: 1,   unit: 'chou' }
+    ],
+    count: [
+      { key: 'ge',   label: '每 1 件',          short: '/件',    atomic: 1,  unit: 'ge' },
+      { key: '10ge', label: '每 10 件',         short: '/10件',  atomic: 10, unit: 'ge' }
+    ],
+    length: [
+      { key: 'm',   label: '每 1 米',           short: '/m',     atomic: 1,  unit: 'm' },
+      { key: '10m', label: '每 10 米',          short: '/10m',   atomic: 10, unit: 'm' }
+    ]
+  };
+
+  var GROUP_BASE_LABEL = { weight: 'g', volume: 'ml', sheet: '抽', count: '个', length: 'm' };
+  var GROUP_LABEL = { weight: '重量', volume: '容量', sheet: '抽张/片数', count: '计件', length: '长度/面积' };
+
+  function unit(key) {
+    return UNITS[key] || { label: String(key), group: 'count', factor: 1 };
+  }
+
+  function groupOf(unitKey) {
+    return unit(unitKey).group;
+  }
+
+  function scalesFor(unitKey) {
+    return SCALES[groupOf(unitKey)] || SCALES.count;
+  }
+
+  function defaultScale(unitKey) {
+    var list = scalesFor(unitKey);
+    return list[0].key;
+  }
+
+  function scaleInfo(unitKey, scaleKey) {
+    var list = scalesFor(unitKey);
+    for (var i = 0; i < list.length; i++) if (list[i].key === scaleKey) return list[i];
+    return list[0];
+  }
+
+  /** 规格乘法器：总数量 = 件数 × 单件净含量 + 赠品量 */
+  function totalQuantity(packCount, unitQty, giftQty) {
+    var p = Math.max(0, Number(packCount) || 0);
+    var u = Math.max(0, Number(unitQty) || 0);
+    var g = Math.max(0, Number(giftQty) || 0);
+    return p * u + g;
+  }
+
+  /** 折算原子量（g / ml / 抽 / 个 / m） */
+  function toAtomic(qty, unitKey) {
+    return (Number(qty) || 0) * unit(unitKey).factor;
+  }
+
+  /** 目标基准均价 = 实付价 / 原子总量 × 目标基准原子量 */
+  function pricePer(price, atomicQty, targetAtomic) {
+    if (!(atomicQty > 0)) return NaN;
+    return (Number(price) || 0) / atomicQty * targetAtomic;
+  }
+
+  /** 一条记录的完整折算结果（赠品可单独设单位，如赠 500g） */
+  function computeRecord(rec, item) {
+    var mainQty = (Math.max(0, Number(rec.pack_count) || 0)) * (Math.max(0, Number(rec.unit_qty) || 0));
+    var giftUnit = rec.gift_unit || rec.amount_unit;
+    var giftQty = Math.max(0, Number(rec.gift_qty) || 0);
+    var giftMismatch = false;
+    if (giftQty > 0 && groupOf(giftUnit) !== groupOf(rec.amount_unit)) {
+      giftMismatch = true;
+      giftQty = 0;
+    }
+    var atomic = toAtomic(mainQty, rec.amount_unit) + toAtomic(giftQty, giftUnit);
+    var qty = atomic / unit(rec.amount_unit).factor;
+    var group = groupOf(rec.amount_unit);
+    var primaryKey = (item && item.primary_unit) || (group === 'weight' ? 'kg'
+      : group === 'volume' ? 'L' : group === 'sheet' ? '100chou' : group === 'length' ? 'm' : 'ge');
+    var secondaryKey = (item && item.secondary_unit) || (group === 'weight' ? '500g'
+      : group === 'volume' ? '500ml' : group === 'sheet' ? 'chou' : group === 'length' ? '10m' : 'ge');
+    // 主/副基准必须与记录单位同组，否则回落到该组默认
+    if (groupOf(primaryKey) !== group) primaryKey = defaultScale(rec.amount_unit);
+    if (groupOf(secondaryKey) !== group) secondaryKey = scalesFor(rec.amount_unit)[1]
+      ? scalesFor(rec.amount_unit)[1].key : primaryKey;
+    if (secondaryKey === primaryKey) {
+      var alt = scalesFor(rec.amount_unit).filter(function (s) { return s.key !== primaryKey; })[0];
+      if (alt) secondaryKey = alt.key;
+    }
+    return {
+      totalQuantity: qty,
+      atomicQuantity: atomic,
+      group: group,
+      primaryKey: primaryKey,
+      secondaryKey: secondaryKey,
+      pricePerPrimary: pricePer(rec.total_price, atomic, scaleInfo(rec.amount_unit, primaryKey).atomic),
+      pricePerSecondary: pricePer(rec.total_price, atomic, scaleInfo(rec.amount_unit, secondaryKey).atomic),
+      primaryKey: primaryKey,
+      secondaryKey: secondaryKey,
+      primaryShort: scaleInfo(rec.amount_unit, primaryKey).short,
+      secondaryShort: scaleInfo(rec.amount_unit, secondaryKey).short,
+      primaryLabel: scaleInfo(rec.amount_unit, primaryKey).label,
+      secondaryLabel: scaleInfo(rec.amount_unit, secondaryKey).label,
+      giftUnit: giftUnit,
+      giftQty: giftQty,
+      giftMismatch: giftMismatch,
+      group: group,
+      groupLabel: GROUP_LABEL[group] || '计件',
+      groupBase: GROUP_BASE_LABEL[group] || '个'
+    };
+  }
+
+  function changePct(current, previous) {
+    var p = Number(previous);
+    if (!(p > 0)) return null;
+    return (Number(current) - p) / p * 100;
+  }
+
+  function round(n, digits) {
+    var d = Math.pow(10, digits == null ? 2 : digits);
+    return Math.round((Number(n) + Number.EPSILON) * d) / d;
+  }
+
+  function money(n, digits) {
+    if (!isFinite(n)) return '—';
+    return '¥' + round(n, digits == null ? 2 : digits).toFixed(digits == null ? 2 : digits);
+  }
+
+  function pct(n, digits) {
+    if (n == null || !isFinite(n)) return '—';
+    var d = digits == null ? 2 : digits;
+    return (n > 0 ? '+' : '') + round(n, d).toFixed(d) + '%';
+  }
+
+  // ---------------------------------------------------------------- 三级筛选
+  function norm(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+
+  /** filters: { keyword, category, brand, series } —— 逐级收窄 */
+  function matchRecord(rec, item, filters) {
+    if (!item) return false;
+    var f = filters || {};
+    if (f.category && f.category !== 'all' && item.category_tag !== f.category) return false;
+    if (f.brand && f.brand !== 'all' && item.brand_tag !== f.brand) return false;
+    if (f.series && f.series !== 'all' && item.series_tag !== f.series) return false;
+    var kw = norm(f.keyword);
+    if (kw) {
+      var hay = [item.item_name, item.category, item.category_tag, item.brand_tag,
+        item.series_tag, (item.tags || []).join(' '), rec.platform, rec.date].join(' ').toLowerCase();
+      if (hay.indexOf(kw) === -1) return false;
+    }
+    return true;
+  }
+
+  function filterRecords(records, items, filters) {
+    var byId = {};
+    items.forEach(function (it) { byId[it.item_id] = it; });
+    return records.filter(function (r) { return matchRecord(r, byId[r.item_id], filters); });
+  }
+
+  /** 级联选项：给定上级选择，返回仍可用的下级选项（避免空结果） */
+  function cascadeOptions(records, items, filters) {
+    var byId = {};
+    items.forEach(function (it) { byId[it.item_id] = it; });
+    var pool = records.filter(function (r) { return byId[r.item_id]; });
+    if (filters && filters.category && filters.category !== 'all') {
+      pool = pool.filter(function (r) { return byId[r.item_id].category_tag === filters.category; });
+    }
+    var cats = [], brands = [], series = [];
+    pool.forEach(function (r) {
+      var it = byId[r.item_id];
+      if (cats.indexOf(it.category_tag) === -1) cats.push(it.category_tag);
+      if (filters && filters.brand && filters.brand !== 'all' && it.brand_tag !== filters.brand) return;
+      if (brands.indexOf(it.brand_tag) === -1) brands.push(it.brand_tag);
+    });
+    pool.forEach(function (r) {
+      var it = byId[r.item_id];
+      if (filters && filters.brand && filters.brand !== 'all' && it.brand_tag !== filters.brand) return;
+      if (series.indexOf(it.series_tag) === -1) series.push(it.series_tag);
+    });
+    return { categories: cats, brands: brands, series: series };
+  }
+
+  function sortRecords(records, by, dir) {
+    var arr = records.slice();
+    var d = dir === 'desc' ? -1 : 1;
+    arr.sort(function (a, b) {
+      if (by === 'date') return (a.date < b.date ? -1 : a.date > b.date ? 1 : 0) * d;
+      var pa = a.pricePerPrimary, pb = b.pricePerPrimary;
+      if (!isFinite(pa)) pa = Infinity;
+      if (!isFinite(pb)) pb = Infinity;
+      return (pa - pb) * d;
+    });
+    return arr;
+  }
+
+  /** 时间序列统计（用于折线图与史低对标） */
+  function seriesStats(points) {
+    if (!points.length) return { min: null, max: null, avg: null, last: null, first: null, lastChange: null, minPoint: null };
+    var vals = points.map(function (p) { return p.value; }).filter(function (v) { return isFinite(v); });
+    var min = Math.min.apply(null, vals);
+    var max = Math.max.apply(null, vals);
+    var sum = vals.reduce(function (a, b) { return a + b; }, 0);
+    var last = points[points.length - 1];
+    var first = points[0];
+    var minPoint = points.filter(function (p) { return p.value === min; })[0] || null;
+    return {
+      min: min, max: max, avg: sum / vals.length,
+      last: last.value, first: first.value,
+      lastChange: changePct(last.value, first.value),
+      minPoint: minPoint
+    };
+  }
+
+  /** 待购比价：每个候选折算后与对标池（史低 / 史均价）比较 */
+  function compareOptions(options, benchmark, scale) {
+    var rows = options.map(function (o) {
+      var mainQty = (Math.max(0, Number(o.pack_count) || 0)) * (Math.max(0, Number(o.unit_qty) || 0));
+      var giftUnit = o.gift_unit || o.unit;
+      var giftQty = Math.max(0, Number(o.gift_qty) || 0);
+      var giftMismatch = false;
+      if (giftQty > 0 && groupOf(giftUnit) !== groupOf(o.unit)) { giftMismatch = true; giftQty = 0; }
+      var atomic = toAtomic(mainQty, o.unit) + toAtomic(giftQty, giftUnit);
+      var qty = atomic / unit(o.unit).factor;
+      var sc = scaleInfo(o.unit, scale);
+      var price = pricePer(o.price, atomic, sc.atomic);
+      return {
+        id: o.id, name: o.name,
+        platform: (o.platforms && o.platforms.length) ? o.platforms.join(' + ') : (o.platform || ''),
+        platforms: (o.platforms || (o.platform ? [o.platform] : [])).slice(),
+        note: o.note,
+        price: Number(o.price) || 0, quantity: qty, atomic: atomic,
+        giftUnit: giftUnit, giftMismatch: giftMismatch,
+        scaleKey: sc.key, scaleShort: sc.short, unitPrice: price,
+        diffMin: benchmark && isFinite(benchmark.min) ? price - benchmark.min : null,
+        diffMinPct: benchmark && isFinite(benchmark.min) ? changePct(price, benchmark.min) : null,
+        diffAvgPct: benchmark && isFinite(benchmark.avg) ? changePct(price, benchmark.avg) : null,
+        verdict: null
+      };
+    }).filter(function (r) { return isFinite(r.unitPrice) && r.unitPrice > 0; });
+
+    rows.sort(function (a, b) { return a.unitPrice - b.unitPrice; });
+    rows.forEach(function (r, i) {
+      r.rank = i + 1;
+      r.best = i === 0;
+      if (r.diffMin == null) r.verdict = 'unknown';
+      else if (r.unitPrice < benchmark.min - 1e-9) r.verdict = 'good';
+      else if (r.unitPrice > benchmark.min + 1e-9) r.verdict = 'bad';
+      else r.verdict = 'flat';
+    });
+    return rows;
+  }
+
+  return {
+    UNITS: UNITS, SCALES: SCALES, GROUP_LABEL: GROUP_LABEL, GROUP_BASE_LABEL: GROUP_BASE_LABEL,
+    unit: unit, groupOf: groupOf, scalesFor: scalesFor, defaultScale: defaultScale, scaleInfo: scaleInfo,
+    totalQuantity: totalQuantity, toAtomic: toAtomic, pricePer: pricePer, computeRecord: computeRecord,
+    changePct: changePct, round: round, money: money, pct: pct,
+    matchRecord: matchRecord, filterRecords: filterRecords, cascadeOptions: cascadeOptions,
+    sortRecords: sortRecords, seriesStats: seriesStats, compareOptions: compareOptions
+  };
+});
+</script>
+<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T08:57:14.445Z',builder:'DeepSeek Harness (nyx)'};
+/* =========================================================================
+ * T-020 v1.1 · 应用层（UI / 状态 / 飞书联调）
+ * 依赖：window.T020Engine（计价引擎）、可选 window.echarts（图表，失败自动降级 SVG）
+ * ========================================================================= */
+(function () {
+  'use strict';
+  var E = window.T020Engine;
+  var BASE_SCALES = JSON.parse(JSON.stringify(E.SCALES));
+  var STORE_KEY = 't020_v11_state';
+  var MOCK_KEY = 't020_v11_feishu_mock';
+  var APP_VERSION = '1.1.1';
+
+  // ===================================================================== 演示数据
+  // 必须预置：11-01 10kg ¥300（¥30/kg、¥15/500g）；11-03 10kg ¥500（¥50/kg、¥25/500g，+66.67%）
+  var SEED_ITEMS = [
+    { item_id: 'ITEM-CAT-01', item_name: '网易严选全价猫粮 1.0', category: '宠物', category_tag: '猫粮', brand_tag: '网易严选', series_tag: '1.0', tags: ['猫粮', '网易严选', '1.0'], primary_unit: 'kg', secondary_unit: '500g' },
+    { item_id: 'ITEM-CAT-02', item_name: '网易严选全价猫粮 2.0', category: '宠物', category_tag: '猫粮', brand_tag: '网易严选', series_tag: '2.0', tags: ['猫粮', '网易严选', '2.0'], primary_unit: 'kg', secondary_unit: '500g' },
+    { item_id: 'ITEM-CAT-03', item_name: '渴望(Orijen)原味鸡肉猫粮', category: '宠物', category_tag: '猫粮', brand_tag: '渴望', series_tag: '经典款', tags: ['猫粮', '渴望', '进口'], primary_unit: 'kg', secondary_unit: '500g' },
+    { item_id: 'ITEM-CAT-04', item_name: '网易严选豆腐猫砂 2.5kg', category: '宠物', category_tag: '猫砂', brand_tag: '网易严选', series_tag: '原味', tags: ['猫砂', '网易严选'], primary_unit: 'kg', secondary_unit: '500g' },
+    { item_id: 'ITEM-PAP-01', item_name: '维达超韧 3 层抽纸（箱装）', category: '日化', category_tag: '抽纸', brand_tag: '维达', series_tag: '3层M码', tags: ['抽纸', '维达'], primary_unit: '100chou', secondary_unit: 'chou' },
+    { item_id: 'ITEM-LIQ-01', item_name: '蓝月亮深层洁净洗衣液', category: '日化', category_tag: '洗衣液', brand_tag: '蓝月亮', series_tag: '深层洁净', tags: ['洗衣液', '蓝月亮'], primary_unit: 'L', secondary_unit: '500ml' }
+  ];
+
+  var SEED_RECORDS = [
+    { record_id: 'REC-001', feishu_id: 'rec_fs_0101', item_id: 'ITEM-CAT-01', date: '2026-11-01', platform: '京东自营', pack_count: 1, unit_qty: 10, gift_qty: 0, amount_unit: 'kg', total_price: 300 },
+    { record_id: 'REC-002', feishu_id: 'rec_fs_0102', item_id: 'ITEM-CAT-01', date: '2026-11-03', platform: '天猫旗舰店', pack_count: 1, unit_qty: 10, gift_qty: 0, amount_unit: 'kg', total_price: 500 },
+    { record_id: 'REC-003', feishu_id: 'rec_fs_0103', item_id: 'ITEM-CAT-01', date: '2026-09-09', platform: '拼多多百亿补贴', pack_count: 2, unit_qty: 5, gift_qty: 0, amount_unit: 'kg', total_price: 280 },
+    { record_id: 'REC-004', feishu_id: 'rec_fs_0104', item_id: 'ITEM-CAT-02', date: '2026-10-12', platform: '网易严选App', pack_count: 1, unit_qty: 12, gift_qty: 0, amount_unit: 'kg', total_price: 420 },
+    { record_id: 'REC-005', feishu_id: 'rec_fs_0105', item_id: 'ITEM-CAT-03', date: '2026-08-15', platform: '京东国际', pack_count: 1, unit_qty: 5.4, gift_qty: 0, amount_unit: 'kg', total_price: 450 },
+    { record_id: 'REC-006', feishu_id: 'rec_fs_0106', item_id: 'ITEM-CAT-03', date: '2026-10-20', platform: '天猫国际自营', pack_count: 1, unit_qty: 5.4, gift_qty: 0.6, amount_unit: 'kg', total_price: 480 },
+    { record_id: 'REC-007', feishu_id: 'rec_fs_0107', item_id: 'ITEM-CAT-04', date: '2026-09-15', platform: '拼多多', pack_count: 4, unit_qty: 2.5, gift_qty: 0, amount_unit: 'kg', total_price: 89 },
+    { record_id: 'REC-008', feishu_id: 'rec_fs_0108', item_id: 'ITEM-PAP-01', date: '2026-08-20', platform: '京东超市', pack_count: 24, unit_qty: 130, gift_qty: 0, amount_unit: 'chou', total_price: 49.9 },
+    { record_id: 'REC-009', feishu_id: 'rec_fs_0109', item_id: 'ITEM-PAP-01', date: '2026-10-30', platform: '猫超闪购', pack_count: 24, unit_qty: 130, gift_qty: 260, amount_unit: 'chou', total_price: 42.9 },
+    { record_id: 'REC-010', feishu_id: 'rec_fs_0110', item_id: 'ITEM-LIQ-01', date: '2026-10-18', platform: '抖音超值购', pack_count: 4, unit_qty: 2, gift_qty: 1, amount_unit: 'L', total_price: 69.9 }
+  ];
+
+  var SEED_OPTIONS = [
+    { id: 'OPT-A', name: '方案 A', platforms: ['淘宝双11主会场', '天猫'], note: '2 大袋 + 送 1.2kg 试吃', price: 268, pack_count: 2, unit_qty: 5, gift_qty: 1.2, unit: 'kg' },
+    { id: 'OPT-B', name: '方案 B', platforms: ['京东PLUS专享'], note: '单袋 5kg 无赠品', price: 158, pack_count: 1, unit_qty: 5, gift_qty: 0, unit: 'kg' },
+    { id: 'OPT-C', name: '方案 C', platforms: ['拼多多百亿补贴'], note: '4 袋 × 2.5kg + 送 400g', price: 245, pack_count: 4, unit_qty: 2.5, gift_qty: 0.4, unit: 'kg' }
+  ];
+
+  // ===================================================================== 状态
+  var state = {
+    tab: 'todo',
+    filters: { keyword: '', category: 'all', brand: 'all', series: 'all', showSearch: false },
+    viewMode: 'card',
+    sortBy: 'date', sortDir: 'desc',
+    chart: { type: 'line', scale: 'kg', target: 'cat:猫粮' },
+    sandbox: { scale: 'kg', target: 'pool:猫粮~all~', category: '猫粮', brand: 'all', options: SEED_OPTIONS.slice() },
+    scalesCustom: [],
+    scalesEdit: {},
+    channels: [],
+    items: SEED_ITEMS.slice(),
+    records: SEED_RECORDS.slice(),
+    customUnits: {},
+    feishu: {
+      mode: 'mock', appId: '', appSecret: '', appToken: 'bascnRonkanConsumablesT020',
+      itemsTable: 'tbl_ConsumableItems_T020', recordsTable: 'tbl_PurchaseRecords_T020',
+      proxyBase: '', lastSync: '', lastResult: ''
+    }
+  };
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        tab: state.tab, filters: state.filters, viewMode: state.viewMode, sortBy: state.sortBy, sortDir: state.sortDir,
+        chart: state.chart, sandbox: state.sandbox, items: state.items, records: state.records,
+        customUnits: state.customUnits, feishu: state.feishu,
+        scalesCustom: state.scalesCustom, scalesEdit: state.scalesEdit, channels: state.channels
+      }));
+    } catch (e) { /* 隐私模式下静默失败，不影响使用 */ }
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      ['filters', 'viewMode', 'sortBy', 'sortDir', 'chart', 'sandbox', 'items', 'records', 'customUnits', 'feishu', 'scalesCustom', 'scalesEdit', 'channels'].forEach(function (k) {
+        if (s[k] != null) state[k] = s[k];
+      });
+      if (s.tab) state.tab = s.tab;
+      if (state.tab === 'home') state.tab = 'todo';
+      if (!state.chart || !state.chart.target || state.chart.target === 'all') {
+        state.chart = state.chart || { type: 'line', scale: 'kg' };
+        state.chart.target = 'cat:猫粮';
+      }
+      Object.keys(state.customUnits || {}).forEach(function (k) {
+        if (state.customUnits[k]) E.UNITS[k] = state.customUnits[k];
+      });
+      migrateSandboxOptions();
+      applyCustomScales();
+    } catch (e) { /* 坏数据不阻断启动 */ }
+  }
+
+  // ===================================================================== 小工具
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function toast(msg, ms) {
+    var t = $('#toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { t.classList.remove('show'); }, ms || 2200);
+  }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function shortDate(s) { return String(s || '').slice(5).replace('-', '/'); }
+  function nextId(prefix, list, key) {
+    var max = 0;
+    list.forEach(function (o) {
+      var m = String(o[key] || '').match(/(\d+)$/);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return prefix + String(max + 1).padStart(3, '0');
+  }
+  function itemById(id) {
+    for (var i = 0; i < state.items.length; i++) if (state.items[i].item_id === id) return state.items[i];
+    return null;
+  }
+  function computed(rec) {
+    var item = itemById(rec.item_id);
+    var c = E.computeRecord(rec, item);
+    return { rec: rec, item: item, c: c };
+  }
+  function allComputed() { return state.records.map(computed).filter(function (x) { return x.item; }); }
+
+  // ---------------------------------------------------------------- 自定义基准单位
+  // E.SCALES 是可变对象：自定义项直接注册进去，图表/沙盘/记录拿到的都是同一套。
+  function applyCustomScales() {
+    (state.scalesCustom || []).forEach(function (cs) {
+      var list = E.SCALES[cs.group] || (E.SCALES[cs.group] = []);
+      if (!list.some(function (x) { return x.key === cs.key; })) {
+        list.push({ key: cs.key, label: cs.label, short: cs.short, atomic: cs.atomic, unit: cs.unit, unitFactor: cs.unitFactor });
+      }
+    });
+    Object.keys(state.scalesEdit || {}).forEach(function (k) {
+      var idx = k.indexOf(':');
+      var group = k.slice(0, idx), key = k.slice(idx + 1);
+      var list = E.SCALES[group] || [];
+      var sc = list.filter(function (x) { return x.key === key; })[0];
+      if (!sc) return;
+      var e = state.scalesEdit[k];
+      ['label', 'short', 'atomic', 'unit', 'unitFactor'].forEach(function (f) {
+        if (e[f] != null) sc[f] = e[f];
+      });
+    });
+  }
+  function isCustomScale(group, key) {
+    return (state.scalesCustom || []).some(function (s) { return s.group === group && s.key === key; });
+  }
+  function unitsOfGroup(group) {
+    return Object.keys(E.UNITS).filter(function (k) { return E.UNITS[k].group === group; });
+  }
+  function scaleShortOf(unitKey) {
+    return E.UNITS[unitKey] ? E.UNITS[unitKey].label : unitKey;
+  }
+
+  function filtersFor(chartTarget) {
+    if (chartTarget && chartTarget.indexOf('cat:') === 0) {
+      return { category: chartTarget.slice(4), brand: 'all', series: 'all', keyword: '' };
+    }
+    if (chartTarget && chartTarget.indexOf('item:') === 0) {
+      return { itemId: chartTarget.slice(5) };
+    }
+    return state.filters;
+  }
+
+  function scoped() {
+    var f = state.filters;
+    var rows = allComputed().filter(function (x) {
+      return E.matchRecord(x.rec, x.item, f);
+    });
+    rows.sort(function (a, b) { return a.rec.date < b.rec.date ? -1 : a.rec.date > b.rec.date ? 1 : 0; });
+    return rows;
+  }
+
+  // ===================================================================== 飞书适配器
+  // 说明：默认 mock（离线可用）；real 模式需要 App ID/Secret + 代理基址（浏览器直连 open.feishu.cn 受 CORS 限制）。
+  var Mock = {
+    key: MOCK_KEY,
+    read: function () {
+      try {
+        var raw = localStorage.getItem(this.key);
+        if (raw) return JSON.parse(raw);
+      } catch (e) { /* ignore */ }
+      var seeded = {
+        items: JSON.parse(JSON.stringify(SEED_ITEMS)),
+        records: JSON.parse(JSON.stringify(SEED_RECORDS)),
+        rev: 1
+      };
+      this.write(seeded);
+      return seeded;
+    },
+    write: function (db) {
+      db.rev = (db.rev || 0) + 1;
+      db.updated_at = new Date().toISOString();
+      try { localStorage.setItem(this.key, JSON.stringify(db)); } catch (e) { /* ignore */ }
+    },
+    delay: function () {
+      return new Promise(function (r) { setTimeout(r, 180 + Math.random() * 260); });
+    }
+  };
+
+  var Feishu = {
+    cfg: function () { return state.feishu; },
+    endpoint: function (path) {
+      var base = String(state.feishu.proxyBase || '').replace(/\/+$/, '');
+      return (base || 'https://open.feishu.cn') + path;
+    },
+    /** 真实模式：换 tenant_access_token（需要代理，避免 CORS 与密钥暴露） */
+    token: async function () {
+      var f = state.feishu;
+      if (!f.appId || !f.appSecret) throw new Error('缺少 App ID / App Secret');
+      var res = await fetch(this.endpoint('/open-apis/auth/v3/tenant_access_token/internal'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ app_id: f.appId, app_secret: f.appSecret })
+      });
+      var j = await res.json();
+      if (j.code !== 0) throw new Error('飞书鉴权失败 ' + j.code + '：' + (j.msg || ''));
+      return j.tenant_access_token;
+    },
+    listRecords: async function (tableId) {
+      var f = state.feishu;
+      var tk = await this.token();
+      var out = [], pageToken = '';
+      for (var i = 0; i < 20; i++) {
+        var url = this.endpoint('/open-apis/bitable/v1/apps/' + f.appToken + '/tables/' + tableId +
+          '/records?page_size=200' + (pageToken ? '&page_token=' + encodeURIComponent(pageToken) : ''));
+        var r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
+        var j = await r.json();
+        if (j.code !== 0) throw new Error('读取飞书表失败 ' + j.code + '：' + (j.msg || ''));
+        (j.data.items || []).forEach(function (it) { out.push({ record_id: it.record_id, fields: it.fields }); });
+        if (!j.data.has_more) break;
+        pageToken = j.data.page_token;
+      }
+      return out;
+    },
+    createRecord: async function (tableId, fields) {
+      var f = state.feishu;
+      var tk = await this.token();
+      var r = await fetch(this.endpoint('/open-apis/bitable/v1/apps/' + f.appToken + '/tables/' + tableId + '/records'), {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ fields: fields })
+      });
+      var j = await r.json();
+      if (j.code !== 0) throw new Error('写入飞书失败 ' + j.code + '：' + (j.msg || ''));
+      return j.data.record;
+    },
+    /** 全量同步：本地 → mock/飞书，再拉回远端做字段一致性校验 */
+    syncAll: async function () {
+      var f = state.feishu;
+      var started = Date.now();
+      if (f.mode === 'mock') {
+        await Mock.delay();
+        var db = Mock.read();
+        var localIds = db.records.map(function (r) { return r.record_id; });
+        var pushed = 0;
+        state.records.forEach(function (r) {
+          if (localIds.indexOf(r.record_id) === -1) { db.records.push(JSON.parse(JSON.stringify(r))); pushed++; }
+          else {
+            var idx = db.records.findIndex(function (x) { return x.record_id === r.record_id; });
+            db.records[idx] = JSON.parse(JSON.stringify(r));
+          }
+        });
+        db.items = JSON.parse(JSON.stringify(state.items));
+        db.feishuRows = state.records.map(recordToFeishu);
+        Mock.write(db);
+        var errs = verifyConsistency(state.records, db.feishuRows);
+        f.lastSync = new Date().toISOString();
+        f.lastResult = 'mock：推送 ' + pushed + ' 条新增 / 远端共 ' + db.records.length + ' 条 / 字段校验不一致 ' + errs.length + ' 项';
+        if (Math.random() < 0.12) { f.lastResult = 'mock：写入成功，但模拟了一次 429 限流（已重试成功）'; }
+        save();
+        return { ok: true, mode: 'mock', pushed: pushed, remote: db.records.length, mismatches: errs, ms: Date.now() - started, msg: f.lastResult };
+      }
+      // real
+      if (!f.proxyBase) throw new Error('真实模式需要填写代理基址（浏览器直连飞书会触发 CORS）');
+      var tk = await this.token();
+      var pushedReal = 0;
+      var existing = await this.listRecords(f.recordsTable);
+      var existIds = existing.map(function (x) { return String((x.fields || {})['record_id'] || ''); });
+      for (var i = 0; i < state.records.length; i++) {
+        var rec = state.records[i];
+        if (existIds.indexOf(rec.record_id) !== -1) continue;
+        await this.createRecord(f.recordsTable, recordToFeishu(rec));
+        pushedReal++;
+      }
+      var after = await this.listRecords(f.recordsTable);
+      f.lastSync = new Date().toISOString();
+      f.lastResult = 'real：新增 ' + pushedReal + ' 条 / 远端共 ' + after.length + ' 条';
+      save();
+      return { ok: true, mode: 'real', pushed: pushedReal, remote: after.length, ms: Date.now() - started, msg: f.lastResult };
+    }
+  };
+
+  function recordToFeishu(rec) {
+    var x = computed(rec), c = x.c;
+    return {
+      record_id: rec.record_id,
+      feishu_id: rec.feishu_id || '',
+      item_id: rec.item_id,
+      date: rec.date,
+      platform: rec.platform,
+      pack_count: rec.pack_count,
+      unit_qty: rec.unit_qty,
+      gift_qty: rec.gift_qty,
+      total_amount: c.totalQuantity,
+      amount_unit: rec.amount_unit,
+      total_price: rec.total_price,
+      price_per_primary: +c.pricePerPrimary.toFixed(4),
+      price_per_secondary: +c.pricePerSecondary.toFixed(4)
+    };
+  }
+
+  function verifyConsistency(local, remote) {
+    var errs = [];
+    var map = {};
+    remote.forEach(function (r) { map[r.record_id] = r; });
+    local.forEach(function (r) {
+      var x = computed(r);
+      var rr = map[r.record_id];
+      if (!rr) { errs.push(r.record_id + ' 远端缺失'); return; }
+      var mine = recordToFeishu(r);
+      ['total_amount', 'price_per_primary', 'price_per_secondary'].forEach(function (k) {
+        var rv = typeof rr[k] === 'number' ? rr[k] : Number(rr[k]);
+        if (Math.abs((Number(mine[k]) || 0) - (Number(rv) || 0)) > 0.001) errs.push(r.record_id + '.' + k);
+      });
+      if (x) { /* keep */ }
+    });
+    return errs;
+  }
+
+  // ===================================================================== 视图：顶部横幅
+  function updateBody(scope) {
+    var el = document.getElementById(scope === 'sandbox' ? 'todoBody' : 'trackBody');
+    if (!el) return;
+    el.innerHTML = scope === 'sandbox' ? todoBodyHtml() : trackBodyHtml();
+  }
+
+  // ===================================================================== 页面标题 / 两级筛选
+  function pageHead(title, sub, right) {
+    return '<div class="head"><div><h1 class="serif">' + esc(title) + '</h1><p>' + esc(sub) + '</p></div>' +
+      (right || '<span class="ver">v1.1</span>') + '</div>';
+  }
+  function filterSource(scope) {
+    return scope === 'sandbox' ? state.sandbox : state.filters;
+  }
+  function filterBar(scope) {
+    var f = filterSource(scope);
+    var catLabel = f.category && f.category !== 'all' ? f.category : '全部';
+    var brandLabel = f.brand && f.brand !== 'all' ? f.brand : '全部';
+    var html = '<div class="filter-bar">' +
+      '<button type="button" class="filter-pill" data-open-filter="category" data-scope="' + scope + '"><span>品类：' + esc(catLabel) + '</span><i>▾</i></button>' +
+      '<button type="button" class="filter-pill" data-open-filter="brand" data-scope="' + scope + '"><span>品牌：' + esc(brandLabel) + '</span><i>▾</i></button>' +
+      '<button type="button" class="filter-icon' + (f.showSearch ? ' on' : '') + '" data-toggle-search="' + scope + '" title="搜索">🔍</button>' +
+      '</div>';
+    if (f.showSearch) {
+      html += '<div class="panel" style="padding:10px;margin-top:8px">' +
+        '<input class="search" data-search="' + scope + '" id="kw-' + scope + '" autocomplete="off" placeholder="' +
+        (scope === 'track' ? '搜商品名 / 品牌 / 渠道，如 猫粮、网易严选' : '搜对标池，如 猫粮、网易严选') + '" value="' + esc(f.keyword || '') + '" />' +
+        '</div>';
+    }
+    return html;
+  }
+  function openFilterSheet(kind, scope) {
+    var f = filterSource(scope);
+    var cat = f.category || 'all';
+    var list;
+    if (kind === 'category') {
+      list = ['all'].concat(E.cascadeOptions(state.records, state.items, {}).categories);
+    } else {
+      list = ['all'].concat(E.cascadeOptions(state.records, state.items, { category: cat, brand: 'all' }).brands);
+    }
+    var cur = kind === 'category' ? cat : (f.brand || 'all');
+    showSheet('<div class="grab"></div><h3>' + (kind === 'category' ? '选择品类' : '选择品牌') + '</h3>' +
+      '<div class="note">' + (kind === 'brand' ? '品牌选项会跟随当前品类收窄。' : '选定品类后，品牌会自动回到「全部」。') + '</div>' +
+      '<div class="pick-list">' + list.map(function (v) {
+        return '<button type="button" class="pick-row ' + (v === cur ? 'on' : '') + '" data-filter-pick="' + esc(scope + '|' + kind + '|' + v) + '">' +
+          '<span>' + esc(v === 'all' ? '全部' : v) + '</span><i class="tick">✓</i></button>';
+      }).join('') + '</div>');
+  }
+  function applyFilterPick(payload) {
+    var parts = payload.split('|');
+    var scope = parts[0], kind = parts[1], val = parts.slice(2).join('|');
+    var f = filterSource(scope);
+    if (kind === 'category') { f.category = val; f.brand = 'all'; }
+    else { f.brand = val; }
+    save();
+    closeSheet();
+    render();
+  }
+
+  // ===================================================================== 视图：已购台账
+  function renderTrack() {
+    $('#view').innerHTML = pageHead('已购台账', '每件东西自动折算双均价',
+      '<button class="btn dark" data-act="new-record">＋ 新增购买记录</button>') +
+      '<div id="filterArea">' + filterBar('track') + '</div>' +
+      '<div id="trackBody">' + trackBodyHtml() + '</div>';
+  }
+  function trackBodyHtml() {
+    var rows = scoped();
+    var sorted = state.sortBy === 'date'
+      ? rows.slice().sort(function (a, b) { return (a.rec.date < b.rec.date ? -1 : a.rec.date > b.rec.date ? 1 : 0) * (state.sortDir === 'desc' ? -1 : 1); })
+      : rows.slice().sort(function (a, b) { return (a.c.pricePerPrimary - b.c.pricePerPrimary) * (state.sortDir === 'desc' ? -1 : 1); });
+
+    var html = '<div class="sec-title"><h2>' + rows.length + ' 条记录</h2>' +
+      '<div class="row">' +
+        '<div class="seg"><button data-seg="view" data-value="card" class="' + (state.viewMode === 'card' ? 'on' : '') + '">卡片</button>' +
+        '<button data-seg="view" data-value="table" class="' + (state.viewMode === 'table' ? 'on' : '') + '">表格</button></div>' +
+      '</div></div>';
+
+    if (!rows.length) {
+      html += '<div class="empty"><div class="ic">🔎</div>这组筛选没有记录，换个品类/品牌试试</div>';
+    } else if (state.viewMode === 'card') {
+      html += '<div class="rec-list">' + sorted.map(recCard).join('') + '</div>';
+    } else {
+      html += '<div class="table-wrap"><table class="tbl"><thead><tr>' +
+        '<th>日期</th><th>商品</th><th>规格</th><th>实付</th><th>主均价</th><th>副均价</th><th>渠道</th><th>较上次</th>' +
+        '</tr></thead><tbody>';
+      var prevMap = {};
+      var prevOf = {};
+      rows.slice().sort(function (a, b) { return a.rec.date < b.rec.date ? -1 : 1; }).forEach(function (x) {
+        prevOf[x.rec.record_id] = prevMap[x.rec.item_id];
+        prevMap[x.rec.item_id] = x;
+      });
+      sorted.forEach(function (x) {
+        var p = prevOf[x.rec.record_id];
+        var chg = p ? E.changePct(x.c.pricePerPrimary, p.c.pricePerPrimary) : null;
+        html += '<tr>' +
+          '<td class="num">' + esc(x.rec.date) + '</td>' +
+          '<td><b>' + esc(x.item.item_name) + '</b><div class="note">#' + esc(x.item.category_tag) + '</div></td>' +
+          '<td class="num">' + esc(specText(x.rec)) + '</td>' +
+          '<td class="num">' + E.money(x.rec.total_price) + '</td>' +
+          '<td class="num"><b>' + E.money(x.c.pricePerPrimary) + '</b><div class="note">' + esc(x.c.primaryShort) + '</div></td>' +
+          '<td class="num">' + E.money(x.c.pricePerSecondary) + '<div class="note">' + esc(x.c.secondaryShort) + '</div></td>' +
+          '<td>' + esc(x.rec.platform) + '</td>' +
+          '<td>' + (chg == null ? '<span class="badge">首次</span>' : '<span class="badge ' + (chg > 0 ? 'bad' : chg < 0 ? 'good' : 'flat') + '">' + E.pct(chg) + '</span>') + '</td>' +
+          '</tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    html += '<button type="button" class="fab" data-act="new-record" title="新增购买记录">＋</button>';
+    return html;
+  }
+
+  function specText(rec) {
+    var s = rec.pack_count + '×' + rec.unit_qty + E.unit(rec.amount_unit).label;
+    if (rec.gift_qty) s += ' + 赠 ' + rec.gift_qty + ' ' + E.unit(rec.gift_unit || rec.amount_unit).label;
+    return s;
+  }
+
+  function recCard(x) {
+    var chg = null;
+    var sameItem = allComputed().filter(function (y) { return y.rec.item_id === x.rec.item_id && y.rec.date < x.rec.date; })
+      .sort(function (a, b) { return a.rec.date < b.rec.date ? 1 : -1; });
+    if (sameItem.length) chg = E.changePct(x.c.pricePerPrimary, sameItem[0].c.pricePerPrimary);
+    return '<div class="rec' + (state.highlightRecordId === x.rec.record_id ? ' rec-hl' : '') + '">' +
+      '<div class="left">' +
+        '<div class="name">' + esc(x.item.item_name) +
+          (chg == null ? '<span class="badge">首次</span>' : '<span class="badge ' + (chg > 0 ? 'bad' : chg < 0 ? 'good' : 'flat') + '">' + E.pct(chg) + '</span>') +
+        '</div>' +
+        '<div class="meta">' + esc(x.rec.date) + ' · ' + esc(x.rec.platform) + ' · ' + esc(specText(x.rec)) + ' · 实付 ' + E.money(x.rec.total_price) + '</div>' +
+        '<div class="tagline"><span>#' + esc(x.item.category_tag) + '</span><span>#' + esc(x.item.brand_tag) + '</span>' +
+          (x.item.series_tag ? '<span>#' + esc(x.item.series_tag) + '</span>' : '') + '</div>' +
+        '<div class="prices">' +
+          '<span class="pill main">' + E.money(x.c.pricePerPrimary) + ' <b>' + esc(x.c.primaryShort) + '</b></span>' +
+          '<span class="pill">' + E.money(x.c.pricePerSecondary) + ' <b>' + esc(x.c.secondaryShort) + '</b></span>' +
+          '<span class="pill">总量 ' + E.round(x.c.totalQuantity, 2) + ' ' + esc(E.unit(x.rec.amount_unit).label) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn ghost sm" data-rebuy="' + esc(x.rec.record_id) + '">再买</button>' +
+      '</div>';
+  }
+
+  function renderReview() {
+    var cas = E.cascadeOptions(state.records, state.items, {});
+    var target = state.chart.target;
+    var tp = parseChartTarget(target);
+    var allRows;
+    if (tp.type === 'item') {
+      allRows = allComputed().filter(function (x) { return x.rec.item_id === tp.id; });
+    } else if (tp.type === 'pool') {
+      allRows = allComputed().filter(function (x) {
+        if (tp.cat !== 'all' && x.item.category_tag !== tp.cat) return false;
+        if (tp.brand !== 'all' && x.item.brand_tag !== tp.brand) return false;
+        return true;
+      });
+    } else {
+      allRows = allComputed().filter(function (x) { return x.item.category_tag === tp.cat; });
+    }
+    allRows.sort(function (a, b) { return a.rec.date < b.rec.date ? -1 : a.rec.date > b.rec.date ? 1 : 0; });
+
+    // 单位组不可混画：取占比最大的组作图，其余记录单独列明（不静默丢弃）
+    var counts = {};
+    allRows.forEach(function (x) { counts[x.c.group] = (counts[x.c.group] || 0) + 1; });
+    var groups = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+    var group = groups[0] || 'weight';
+    var rows = allRows.filter(function (x) { return x.c.group === group; });
+    var excluded = allRows.filter(function (x) { return x.c.group !== group; });
+    state.chart._group = group;
+    state.chart._excluded = excluded.length;
+
+    var scales = E.SCALES[group] || E.SCALES.count;
+    if (!scales.some(function (x) { return x.key === state.chart.scale; })) state.chart.scale = scales[0].key;
+    var sc = scales.filter(function (x) { return x.key === state.chart.scale; })[0] || scales[0];
+    var repUnit = rows.length ? rows[0].rec.amount_unit : unitsOfGroup(group)[0];
+
+    var points = rows.map(function (x) {
+      return { date: x.rec.date, value: E.pricePer(x.rec.total_price, x.c.atomicQuantity, sc.atomic), label: x.item.item_name, row: x };
+    }).filter(function (p) { return isFinite(p.value); });
+    var st = E.seriesStats(points);
+
+    var html = pageHead('均价走势复盘', '同一商品跨时间均价折线图 · 单位自由切换');
+    html += '<div class="panel" style="padding:14px">' +
+      '<div class="row wrap"><label class="field" style="flex:1;min-width:180px;margin:0"><span>复盘对象</span>' +
+      '<select id="chartTarget">' + chartTargetOptions(cas) + '</select></label></div>' +
+      '<div class="row wrap" style="margin-top:12px">' +
+        '<div class="seg"><button data-seg="chartType" data-value="line" class="' + (state.chart.type === 'line' ? 'on' : '') + '">折线</button>' +
+        '<button data-seg="chartType" data-value="bar" class="' + (state.chart.type === 'bar' ? 'on' : '') + '">柱状</button></div>' +
+      '</div>' +
+      '<div class="pill-units" style="margin-top:10px">' + scaleChipsHtml(scales) + '</div>' +
+      '<div class="note" style="margin-top:8px">' + (state.chart.scalesOpen
+        ? '点胶囊切换基准；点胶囊右侧 ✎ 可改数值/单位；＋ 新增自定义基准。'
+        : '当前基准可直接改 ✎；点右侧「切换」展开全部 ' + scales.length + ' 个基准。') + '</div>' +
+      '</div>';
+
+    if (excluded.length) {
+      html += '<div class="panel" style="margin-top:10px;padding:12px 14px;background:#FDF6EF;border:1px solid #F0D9C8">' +
+        '<div class="note">⚠️ 另有 <b>' + excluded.length + '</b> 条记录的单位与「' + esc(E.GROUP_LABEL[group]) + '」不同，未计入图表（换算后不可比），各自单价如下：</div>' +
+        '<div class="note" style="margin-top:6px;line-height:1.9">' + excluded.map(function (x) {
+          var own = E.scalesFor(x.rec.amount_unit)[0];
+          var v = E.pricePer(x.rec.total_price, x.c.atomicQuantity, own.atomic);
+          return esc(x.rec.date) + ' · ' + esc(x.item.item_name) + ' · ' + esc(E.unit(x.rec.amount_unit).label) +
+            ' · ' + E.money(v) + esc(own.short) + '（' + esc(E.GROUP_LABEL[x.c.group]) + '组）';
+        }).join('<br>') + '</div>' +
+        '<div class="note" style="margin-top:8px">要单独看这些记录，可在上方「复盘对象」里改选对应单品，或把它们的单位改到同一组。</div>' +
+        '</div>';
+    }
+
+    html += '<div class="sec-title"><h2>均价走势</h2><span class="hint">' + esc(sc.label) + ' · ' + points.length + ' 个节点</span></div>';
+    html += '<div class="chart-box"><div id="chart"></div></div>';
+    html += '<div class="stat-row">' +
+      stat('史低', st.min == null ? '—' : E.money(st.min, 2)) +
+      stat('史高', st.max == null ? '—' : E.money(st.max, 2)) +
+      stat('均价', st.avg == null ? '—' : E.money(st.avg, 2)) +
+      stat('最近', st.last == null ? '—' : E.money(st.last, 2)) +
+      '</div>';
+    if (st.lastChange != null) {
+      html += '<div class="panel" style="margin-top:10px;padding:12px 14px"><div class="note">区间变化：<b>' + E.pct(st.lastChange) + '</b>' +
+        (points.length > 1 ? '，从 ' + esc(points[0].date) + ' 的 ' + E.money(points[0].value) + ' 到 ' + esc(points[points.length - 1].date) + ' 的 ' + E.money(points[points.length - 1].value) : '') +
+        '；单位：' + esc(sc.label) + '</div></div>';
+    }
+    html += '<div class="sec-title"><h2>节点明细</h2><span class="hint">' + esc(E.GROUP_LABEL[group]) + '组 · ' + esc(sc.label) + '</span></div>';
+    html += points.length ? '<div class="table-wrap"><table class="tbl"><thead><tr><th>日期</th><th>商品</th><th>实付</th><th>本次均价</th><th>较上次</th><th>距史低</th></tr></thead><tbody>' +
+      points.map(function (p, i) {
+        var prev = i > 0 ? points[i - 1].value : null;
+        var chg = prev == null ? null : E.changePct(p.value, prev);
+        var gap = st.min ? E.changePct(p.value, st.min) : null;
+        return '<tr><td class="num">' + esc(p.date) + '</td><td>' + esc(p.label) + '</td><td class="num">' + E.money(p.row.rec.total_price) + '</td>' +
+          '<td class="num"><b>' + E.money(p.value) + '</b></td>' +
+          '<td>' + (chg == null ? '—' : '<span class="badge ' + (chg > 0 ? 'bad' : chg < 0 ? 'good' : 'flat') + '">' + E.pct(chg) + '</span>') + '</td>' +
+          '<td>' + (gap == null ? '—' : '<span class="badge ' + (gap > 0 ? 'bad' : gap < 0 ? 'good' : 'flat') + '">' + E.pct(gap) + '</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : '<div class="empty"><div class="ic">📉</div>这个对象在「' + esc(E.GROUP_LABEL[group]) + '」组下没有可绘制的记录</div>';
+
+    $('#view').innerHTML = html;
+    drawChart(points, sc, st);
+  }
+
+  function stat(k, v) { return '<div class="stat"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
+
+  function scaleChipsHtml(scales) {
+    function chip(s) {
+      return '<button class="chip sm scale-chip ' + (state.chart.scale === s.key ? 'on' : '') + '" data-scale="' + s.key + '">' +
+        esc(s.label) + '<i class="pen" data-edit-scale="' + s.key + '" title="编辑这个基准">✎</i></button>';
+    }
+    if (state.chart.scalesOpen) {
+      return scales.map(chip).join('') +
+        '<button class="chip sm add-scale" data-new-scale="1" title="新增自定义基准">＋</button>' +
+        '<button class="chip sm toggle-scales" data-toggle-scales="1">收起 ⌃</button>';
+    }
+    var cur = scales.filter(function (s) { return s.key === state.chart.scale; })[0] || scales[0];
+    return chip(cur) +
+      '<button class="chip sm toggle-scales" data-toggle-scales="1" title="展开全部基准">⌄ 切换基准</button>' +
+      '<button class="chip sm add-scale" data-new-scale="1" title="新增自定义基准">＋</button>';
+  }
+
+  function chartTargetOptions(cas) {
+    var t = state.chart.target;
+    var opts = [
+      { v: 'cat:猫粮', l: '#猫粮（全品类通比）' }
+    ];
+    cas.categories.forEach(function (c) {
+      if (c === '猫粮') return;
+      opts.push({ v: 'cat:' + c, l: '#' + c + '（全品类通比）' });
+    });
+    state.items.forEach(function (it) {
+      opts.push({ v: 'item:' + it.item_id, l: '单品：' + it.item_name });
+    });
+    if (!opts.some(function (o) { return o.v === t; })) {
+      var tp = parseChartTarget(t);
+      var lbl = tp.type === 'pool' ? '当前对标：' + poolLabel(tp.cat, tp.brand) : '当前：' + t;
+      opts.unshift({ v: t, l: lbl });
+    }
+    return opts.map(function (o) {
+      return '<option value="' + esc(o.v) + '"' + (o.v === t ? ' selected' : '') + '>' + esc(o.l) + '</option>';
+    }).join('');
+  }
+
+  function drawChart(points, sc, st) {
+    var el = $('#chart');
+    if (!el) return;
+    if (window.echarts && !window.__echartsFailed) {
+      if (drawChart._inst) { drawChart._inst.dispose(); }
+      var inst = window.echarts.init(el, null, { renderer: 'canvas' });
+      drawChart._inst = inst;
+      var labels = points.map(function (p) { return p.date.slice(5); });
+      var vals = points.map(function (p) { return +p.value.toFixed(2); });
+      var isBar = state.chart.type === 'bar';
+      inst.setOption({
+        animationDuration: 260,
+        grid: { left: 44, right: 18, top: 36, bottom: 30 },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#2B2623', borderWidth: 0, textStyle: { color: '#fff', fontSize: 12 },
+          formatter: function (ps) {
+            var p = points[ps[0].dataIndex];
+            return p.date + '<br>' + p.label + '<br>' + E.money(ps[0].value) + sc.short + '（实付 ' + E.money(p.row.rec.total_price) + '）';
+          }
+        },
+        xAxis: { type: 'category', data: labels, axisLine: { lineStyle: { color: '#E7E1D4' } }, axisTick: { show: false }, axisLabel: { color: '#8E8A83', fontSize: 11 } },
+        yAxis: {
+          type: 'value', scale: true, splitLine: { lineStyle: { color: '#F0EBE0' } },
+          axisLabel: { color: '#8E8A83', fontSize: 11, formatter: function (v) { return v; } }
+        },
+        series: [{
+          type: isBar ? 'bar' : 'line',
+          data: vals,
+          smooth: !isBar,
+          symbolSize: 8,
+          barWidth: '46%',
+          itemStyle: { color: '#C86D44', borderRadius: isBar ? [8, 8, 0, 0] : 0 },
+          lineStyle: { width: 2.5, color: '#C86D44' },
+          areaStyle: isBar ? null : {
+            color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(200,109,68,.22)' }, { offset: 1, color: 'rgba(200,109,68,0)' }
+            ])
+          },
+          markPoint: st.min != null ? {
+            symbol: 'circle', symbolSize: 9,
+            itemStyle: { color: '#2F7A57' },
+            label: { show: true, position: 'top', color: '#2F7A57', fontSize: 10, formatter: '史低 ' + E.money(st.min) },
+            data: [{ type: 'min' }]
+          } : null,
+          markLine: st.avg != null ? {
+            silent: true, symbol: 'none',
+            lineStyle: { type: 'dashed', color: '#B9AE97' },
+            label: { formatter: '均价 ' + E.money(st.avg), color: '#8E8A83', fontSize: 10, position: 'insideEndTop' },
+            data: [{ yAxis: +st.avg.toFixed(2) }]
+          } : null
+        }]
+      });
+      return;
+    }
+    // 降级渲染：无 ECharts 时用内联 SVG
+    drawChartFallback(el, points, st, sc);
+  }
+
+  function drawChartFallback(el, points, st, sc) {
+    if (!points.length) { el.innerHTML = ''; return; }
+    var W = 640, H = 300, pad = { l: 46, r: 16, t: 30, b: 34 };
+    var vals = points.map(function (p) { return p.value; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    if (min === max) { min -= 1; max += 1; }
+    var iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+    var X = function (i) { return pad.l + (points.length === 1 ? iw / 2 : iw * i / (points.length - 1)); };
+    var Y = function (v) { return pad.t + ih - (v - min) / (max - min) * ih; };
+    var line = points.map(function (p, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(p.value).toFixed(1); }).join(' ');
+    var svg = '<svg class="chart-fallback" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">';
+    svg += '<line x1="' + pad.l + '" y1="' + (pad.t + ih) + '" x2="' + (W - pad.r) + '" y2="' + (pad.t + ih) + '" stroke="#E7E1D4"/>';
+    if (st.avg != null) svg += '<line x1="' + pad.l + '" y1="' + Y(st.avg) + '" x2="' + (W - pad.r) + '" y2="' + Y(st.avg) + '" stroke="#B9AE97" stroke-dasharray="5 4"/>';
+    if (state.chart.type === 'bar') {
+      var bw = Math.min(46, iw / Math.max(points.length, 1) * 0.5);
+      points.forEach(function (p, i) {
+        svg += '<rect x="' + (X(i) - bw / 2) + '" y="' + Y(p.value) + '" width="' + bw + '" height="' + (pad.t + ih - Y(p.value)) + '" rx="8" fill="#C86D44"/>';
+      });
+    } else {
+      svg += '<path d="' + line + '" fill="none" stroke="#C86D44" stroke-width="2.5"/>';
+      points.forEach(function (p, i) { svg += '<circle cx="' + X(i) + '" cy="' + Y(p.value) + '" r="4" fill="#C86D44"/>'; });
+    }
+    points.forEach(function (p, i) {
+      svg += '<text x="' + X(i) + '" y="' + (H - 12) + '" font-size="10" fill="#8E8A83" text-anchor="middle">' + esc(p.date.slice(5)) + '</text>';
+    });
+    // Y 轴刻度（最大值 / 中值 / 最小值）与史低绿点
+    [max, (max + min) / 2, min].forEach(function (v) {
+      svg += '<text x="' + (pad.l - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '" font-size="9" fill="#B9AE97" text-anchor="end">' + E.round(v, 1) + '</text>';
+    });
+    if (st.min != null && st.minPoint) {
+      var mi = 0;
+      points.forEach(function (p, i) { if (p.value === st.min) mi = i; });
+      svg += '<circle cx="' + X(mi) + '" cy="' + Y(st.min) + '" r="5" fill="#2F7A57"/>' +
+        '<text x="' + X(mi) + '" y="' + (Y(st.min) - 10) + '" font-size="9" fill="#2F7A57" text-anchor="middle">史低 ' + E.money(st.min) + '</text>';
+    }
+    svg += '<text x="' + pad.l + '" y="' + (pad.t - 10) + '" font-size="10" fill="#8E8A83">' + esc(sc.label) + '（离线降级渲染）</text>';
+    svg += '</svg>';
+    el.innerHTML = svg;
+  }
+
+  // ===================================================================== 视图：待购沙盘
+  function renderTodo() {
+    var sb = state.sandbox;
+    sb.category = sb.category || '猫粮';
+    sb.brand = sb.brand || 'all';
+    sb.target = 'pool:' + [sb.category, sb.brand, (sb.keyword || '')].join('~');
+    $('#view').innerHTML = pageHead('好物算算', '待购比价沙盘 · 买前比一比，防被背刺') +
+      '<div id="filterArea">' + filterBar('sandbox') + '</div>' +
+      '<div id="todoBody">' + todoBodyHtml() + '</div>';
+  }
+
+  function todoBodyHtml() {
+    var sb = state.sandbox;
+    sb.target = 'pool:' + [sb.category || 'all', sb.brand || 'all', (sb.keyword || '')].join('~');
+    var bench = benchmarkFor(sb.target);
+    var sc = sb.scale;
+    var firstUnit = (sb.options[0] || {}).unit || 'kg';
+    var scales = E.scalesFor(firstUnit);
+    if (!scales.some(function (x) { return x.key === sc; })) { sb.scale = scales[0].key; sc = sb.scale; }
+    var rows = E.compareOptions(sb.options, bench.stats, sc);
+    var byId = {};
+    rows.forEach(function (r) { byId[r.id] = r; });
+
+    var html = '';
+    if (bench.stats.min != null) {
+      var dual = '';
+      if (bench.group === 'weight' && bench.statsMinKg != null && bench.statsMinJin != null) {
+        dual = '（' + E.money(bench.statsMinJin) + '/500g）';
+      }
+      html += '<div class="panel bench-card">' +
+        '<div class="row wrap" style="justify-content:space-between;align-items:flex-start">' +
+          '<div style="flex:1;min-width:180px">' +
+            '<div class="note">历史最低价对标</div>' +
+            '<div class="bench-num">' + E.money(bench.stats.min) + '<span class="unit">' + esc(bench.scaleShort || '') + '</span>' + (dual ? '<span class="sub">' + dual + '</span>' : '') + '</div>' +
+            '<div class="note">均价 ' + E.money(bench.stats.avg) + ' · ' + esc(bench.label) + ' · 共 ' + bench.count + ' 笔</div>' +
+          '</div>' +
+          '<button type="button" class="btn ghost sm" data-jump-review="1">📈 看复盘走势</button>' +
+        '</div>' +
+        '<div class="hr"></div>' +
+        '<div class="row wrap" style="gap:8px">' +
+          '<span class="note">统一折算基准</span>' +
+          '<select id="sandboxScale" style="max-width:230px">' +
+            scales.map(function (x) { return '<option value="' + x.key + '"' + (x.key === sc ? ' selected' : '') + '>' + esc(x.label) + '</option>'; }).join('') +
+          '</select>' +
+        '</div>' +
+        '</div>';
+    } else {
+      html += '<div class="panel"><div class="row wrap" style="justify-content:space-between">' +
+        '<div class="note">该筛选下还没有历史记录，先记几笔再来对标。</div>' +
+        '<button type="button" class="btn ghost sm" data-jump-review="1">📈 看复盘走势</button></div></div>';
+    }
+
+    html += '<div class="sec-title"><h2>候选方案</h2><button class="chip sm" data-act="add-opt">＋ 添加候选</button></div>';
+    if (!sb.options.length) {
+      html += '<div class="empty"><div class="ic">🧺</div>还没有候选方案，点「＋ 添加候选」开始比价</div>';
+    }
+    html += '<div style="display:flex;flex-direction:column;gap:12px">';
+    sb.options.forEach(function (opt, idx) {
+      var r = byId[opt.id];
+      var theme = ['c-mint', 'c-peach', 'c-yellow', 'c-sand'][idx % 4];
+      html += '<div class="opt ' + theme + '" data-opt-card="' + esc(opt.id) + '">' +
+        '<div class="opt-head"><b>' + esc(opt.name) + '</b>' +
+          '<span class="badge good" data-best="' + esc(opt.id) + '" style="' + (r && r.best ? '' : 'display:none') + '">🏆 当前最划算</span>' +
+          '<div class="spacer"></div><button class="chip sm" data-del-opt="' + esc(opt.id) + '">删除</button></div>' +
+        '<div class="grid2">' +
+          '<label class="field" style="margin:0;grid-column:1 / -1"><span>渠道（可多选，可自定义）</span>' +
+            '<button type="button" class="select-like" data-chan-open="' + esc(opt.id) + '">' +
+              '<span class="' + (optPlatforms(opt).length ? '' : 'ph') + '">' + esc(chanLabel(opt)) + '</span>' +
+              '<i class="chev">⌄</i>' +
+            '</button></label>' +
+          '<label class="field" style="margin:0"><span>实付总价 ¥</span><input type="number" step="0.01" data-opt="' + esc(opt.id) + '" data-f="price" value="' + esc(opt.price) + '"/></label>' +
+          '<label class="field" style="margin:0"><span>件数</span><input type="number" step="0.01" data-opt="' + esc(opt.id) + '" data-f="pack_count" value="' + esc(opt.pack_count) + '"/></label>' +
+          '<label class="field" style="margin:0"><span>单件净含量</span><input type="number" step="0.01" data-opt="' + esc(opt.id) + '" data-f="unit_qty" value="' + esc(opt.unit_qty) + '"/></label>' +
+          '<label class="field" style="margin:0"><span>单位</span><select data-opt="' + esc(opt.id) + '" data-f="unit">' + unitOptions(opt.unit) + '</select></label>' +
+          '<label class="field" style="margin:0"><span>赠品量</span><input type="number" step="0.01" data-opt="' + esc(opt.id) + '" data-f="gift_qty" value="' + esc(opt.gift_qty) + '"/></label>' +
+          '<label class="field" style="margin:0"><span>赠品单位</span><select data-opt="' + esc(opt.id) + '" data-f="gift_unit">' + unitOptions(opt.gift_unit || opt.unit) + '</select></label>' +
+        '</div>' +
+        '<div class="note" data-spec="' + esc(opt.id) + '">' + optSpecText(opt) + '</div>' +
+        '<div data-res="' + esc(opt.id) + '">' + optResultHtml(r) + '</div>' +
+        '<button class="btn block" data-archive="' + esc(opt.id) + '">✅ 下单转已购</button>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    html += '<div class="sec-title"><h2>结论</h2><span class="hint">对标：' + esc(bench.shortLabel) + '</span></div>';
+    html += '<div class="panel"><div class="note" data-summary>' + summaryText(rows, bench) + '</div></div>';
+    return html;
+  }
+
+  function optSpecText(opt) {
+    var calc = E.computeRecord({ pack_count: opt.pack_count, unit_qty: opt.unit_qty, gift_qty: opt.gift_qty, amount_unit: opt.unit, gift_unit: opt.gift_unit || opt.unit, total_price: opt.price }, null);
+    var giftTxt = '';
+    if (Number(opt.gift_qty)) {
+      giftTxt = ' + 赠 ' + opt.gift_qty + ' ' + E.unit(opt.gift_unit || opt.unit).label;
+    }
+    return '规格：' + esc(opt.pack_count + ' × ' + opt.unit_qty + ' ' + E.unit(opt.unit).label + giftTxt) +
+      ' = ' + E.round(calc.totalQuantity, 3) + ' ' + esc(E.unit(opt.unit).label) +
+      (calc.giftMismatch ? '（赠品量纲不同已忽略）' : '');
+  }
+
+  function optResultHtml(r) {
+    if (!r) {
+      return '<div class="result"><div class="rank">—</div><div style="flex:1"><div class="up" style="font-size:15px;color:var(--ink-3)">待填</div>' +
+        '<div class="note">填好价格与规格后，自动折算并与对标池比对</div></div>' +
+        '<span class="verdict unknown">待填</span></div>';
+    }
+    return '<div class="result ' + (r.best ? 'best' : '') + '">' +
+      '<div class="rank">' + r.rank + '</div>' +
+      '<div style="flex:1"><div class="up">' + E.money(r.unitPrice) + '<span style="font-size:11px;font-weight:600">' + esc(r.scaleShort) + '</span></div>' +
+      '<div class="note">' + verdictText(r) + '</div></div>' +
+      '<span class="verdict ' + r.verdict + '">' + verdictBadge(r) + '</span></div>';
+  }
+
+  // 输入时只重算结果区（不重建 input，避免丢焦点/弹键盘）
+  function refreshSandbox() {
+    if (state.tab !== 'todo') return;
+    var bench = benchmarkFor(state.sandbox.target);
+    var rows = E.compareOptions(state.sandbox.options, bench.stats, state.sandbox.scale);
+    var byId = {};
+    rows.forEach(function (r) { byId[r.id] = r; });
+    state.sandbox.options.forEach(function (opt) {
+      var res = document.querySelector('[data-res="' + opt.id + '"]');
+      if (res) res.innerHTML = optResultHtml(byId[opt.id]);
+      var spec = document.querySelector('[data-spec="' + opt.id + '"]');
+      if (spec) spec.innerHTML = optSpecText(opt);
+      var badge = document.querySelector('[data-best="' + opt.id + '"]');
+      if (badge) badge.style.display = byId[opt.id] && byId[opt.id].best ? '' : 'none';
+    });
+    var sum = document.querySelector('[data-summary]');
+    if (sum) sum.innerHTML = summaryText(rows, bench);
+    save();
+  }
+
+  function unitOptions(selected) {
+    var groups = {};
+    Object.keys(E.UNITS).forEach(function (k) {
+      var g = E.UNITS[k].group;
+      (groups[g] = groups[g] || []).push(k);
+    });
+    return Object.keys(groups).map(function (g) {
+      return '<optgroup label="' + E.GROUP_LABEL[g] + '">' + groups[g].map(function (k) {
+        return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>' + esc(E.UNITS[k].label) + '</option>';
+      }).join('') + '</optgroup>';
+    }).join('');
+  }
+
+  function benchOptions() {
+    var cats = E.cascadeOptions(state.records, state.items, {}).categories;
+    var opts = cats.map(function (c) { return { v: 'cat:' + c, l: '全部 #' + c + ' 历史库' }; });
+    state.items.forEach(function (it) { opts.push({ v: 'item:' + it.item_id, l: '单品：' + it.item_name }); });
+    var t = state.sandbox.target;
+    if (!opts.some(function (o) { return o.v === t; })) t = opts.length ? opts[0].v : '';
+    state.sandbox.target = t;
+    return opts.map(function (o) { return '<option value="' + esc(o.v) + '"' + (o.v === t ? ' selected' : '') + '>' + esc(o.l) + '</option>'; }).join('');
+  }
+
+  function parseChartTarget(target) {
+    var t = String(target || '');
+    if (t.indexOf('item:') === 0) return { type: 'item', id: t.slice(5) };
+    if (t.indexOf('pool:') === 0) {
+      var p = t.slice(5).split('~');
+      return { type: 'pool', cat: p[0] || 'all', brand: p[1] || 'all', kw: p[2] || '' };
+    }
+    if (t.indexOf('cat:') === 0) return { type: 'cat', cat: t.slice(4) };
+    return { type: 'cat', cat: '猫粮' };
+  }
+  function poolLabel(cat, brand) {
+    return (cat === 'all' || !cat ? '全部品类' : '#' + cat) + (brand && brand !== 'all' ? ' · ' + brand : '');
+  }
+  function benchmarkFor(target) {
+    var p = parseChartTarget(target);
+    var rows, label, shortLabel;
+    if (p.type === 'item') {
+      var it = itemById(p.id);
+      rows = allComputed().filter(function (x) { return x.rec.item_id === p.id; });
+      label = '对标单品「' + (it ? it.item_name : p.id) + '」历史库';
+      shortLabel = (it ? it.item_name : p.id);
+    } else if (p.type === 'pool') {
+      var kw = String(p.kw || '').toLowerCase();
+      rows = allComputed().filter(function (x) {
+        if (p.cat !== 'all' && x.item.category_tag !== p.cat) return false;
+        if (p.brand !== 'all' && x.item.brand_tag !== p.brand) return false;
+        if (kw) {
+          var hay = [x.item.item_name, x.item.category_tag, x.item.brand_tag, x.rec.platform].join(' ').toLowerCase();
+          if (hay.indexOf(kw) === -1) return false;
+        }
+        return true;
+      });
+      label = '对标 ' + poolLabel(p.cat, p.brand) + (kw ? '（关键词「' + p.kw + '」）' : '') + ' 历史库';
+      shortLabel = poolLabel(p.cat, p.brand);
+    } else {
+      rows = allComputed().filter(function (x) { return x.item.category_tag === p.cat; });
+      label = '对标全部 #' + p.cat + ' 历史购买库';
+      shortLabel = '# ' + p.cat;
+    }
+    var scale = state.sandbox.scale;
+    var group = rows.length ? rows[0].c.group : (E.groupOf((state.sandbox.options[0] || {}).unit || 'kg'));
+    var sc = E.scalesFor(rows.length ? rows[0].rec.amount_unit : 'kg')[0];
+    if (rows.length) {
+      var list = E.scalesFor(rows[0].rec.amount_unit);
+      sc = list.filter(function (x) { return x.key === scale; })[0] || list[0];
+    }
+    function statsAt(key) {
+      var pts = rows.map(function (x) {
+        var s = E.scaleInfo(x.rec.amount_unit, key);
+        return { date: x.rec.date, value: E.pricePer(x.rec.total_price, x.c.atomicQuantity, s.atomic) };
+      }).filter(function (v) { return isFinite(v.value); });
+      return E.seriesStats(pts);
+    }
+    var st = statsAt(sc.key);
+    var minKg = null, minJin = null;
+    if (group === 'weight' && rows.length) {
+      var kgStats = statsAt('kg').min;
+      var jinStats = statsAt('500g').min;
+      minKg = kgStats; minJin = jinStats;
+    }
+    return {
+      rows: rows, stats: st, label: label, shortLabel: shortLabel, count: rows.length,
+      group: group, scaleShort: sc.short, statsMinKg: minKg, statsMinJin: minJin
+    };
+  }
+
+  function verdictBadge(r) {
+    if (r.verdict === 'good') return '🟢 抄底';
+    if (r.verdict === 'bad') return '🔴 防背刺';
+    if (r.verdict === 'flat') return '⚪ 平价';
+    return '⚪ 无基准';
+  }
+  function avgPhrase(p) {
+    if (p == null || !isFinite(p)) return '—';
+    var v = E.pct(Math.abs(p), 2).replace('+', '');
+    return p >= 0 ? '高 ' + v : '低 ' + v;
+  }
+  function verdictText(r) {
+    if (r.diffMin == null) return '对标池没有历史数据，先入库几笔再来比。';
+    if (r.verdict === 'good') {
+      return '比历史最低价便宜 <b>' + E.money(Math.abs(r.diffMin)) + r.scaleShort + '</b>（' + E.pct(r.diffMinPct) + '）' +
+        '，比历史均价' + avgPhrase(r.diffAvgPct) + ' · 抄底好价！';
+    }
+    if (r.verdict === 'bad') {
+      return '比历史最低价贵 <b>' + E.money(r.diffMin) + r.scaleShort + '</b>（' + E.pct(r.diffMinPct) + '）' +
+        '，比历史均价' + avgPhrase(r.diffAvgPct) + ' · 建议再蹲蹲！';
+    }
+    return '与历史最低价持平，可以再等等看有没有券。';
+  }
+  function summaryText(rows, bench) {
+    if (!rows.length) return '先填一个候选方案，才能开始比价。';
+    var best = rows[0];
+    var txt = '🏆 当前最划算的是 <b>' + esc(best.name) + '</b>（' + esc(best.platform) + '），折算 ' + E.money(best.unitPrice) + best.scaleShort + '。';
+    if (bench.stats.min != null) {
+      txt += best.verdict === 'good'
+        ? ' 比 ' + esc(bench.shortLabel) + ' 史低还省 ' + E.pct(best.diffMinPct) + '，可以入手。'
+        : best.verdict === 'bad'
+          ? ' 但比 ' + esc(bench.shortLabel) + ' 史低贵 ' + E.pct(best.diffMinPct) + '，不着急就再蹲。'
+          : ' 与 ' + esc(bench.shortLabel) + ' 史低持平。';
+    }
+    return txt;
+  }
+
+  // ===================================================================== 视图：设置
+  function renderSettings() {
+    var f = state.feishu;
+    var html = pageHead('设置', '飞书账本 · 单位字典 · 数据自检');
+    html += '<div class="sec-title"><h2>飞书多维表格</h2><span class="hint">Bitable 双表</span></div>';
+    html += '<div class="panel">' +
+      '<div class="row wrap" style="margin-bottom:12px">' +
+        '<div class="seg"><button data-seg="fMode" data-value="mock" class="' + (f.mode === 'mock' ? 'on' : '') + '">Mock 离线</button>' +
+        '<button data-seg="fMode" data-value="real" class="' + (f.mode === 'real' ? 'on' : '') + '">真实 Base</button></div>' +
+      '</div>' +
+      '<label class="field"><span>App ID（凭证只存本机 localStorage，不写进源码）</span><input id="fAppId" placeholder="cli_xxxxxxxxxxxx" value="' + esc(f.appId) + '"/></label>' +
+      '<label class="field"><span>App Secret</span><input id="fAppSecret" type="password" placeholder="留空则沿用已保存值" value="' + esc(f.appSecret) + '"/></label>' +
+      '<div class="grid2">' +
+        '<label class="field"><span>app_token</span><input id="fAppToken" value="' + esc(f.appToken) + '"/></label>' +
+        '<label class="field"><span>代理基址（real 模式必填）</span><input id="fProxy" placeholder="https://your-proxy.example.com" value="' + esc(f.proxyBase) + '"/></label>' +
+        '<label class="field"><span>商品档案表</span><input id="fItemsTable" value="' + esc(f.itemsTable) + '"/></label>' +
+        '<label class="field"><span>已购记录表</span><input id="fRecordsTable" value="' + esc(f.recordsTable) + '"/></label>' +
+      '</div>' +
+      '<div class="row wrap"><button class="btn" data-act="save-feishu">保存配置</button>' +
+      '<button class="btn ghost" data-act="test-feishu">测试连接</button>' +
+      '<button class="btn ghost" data-act="sync">立即同步</button>' +
+      '<button class="btn danger" data-act="clear-secret">清除凭证</button></div>' +
+      '<div class="hr"></div><div class="note">' +
+        '状态：<span class="status-dot ' + (f.lastSync ? 'ok' : 'warn') + '"></span> ' +
+        (f.lastSync ? '上次同步 ' + esc(new Date(f.lastSync).toLocaleString('zh-CN', { hour12: false })) : '尚未同步') +
+        '<br>' + esc(f.lastResult || 'Mock 模式会在本机模拟飞书读写与限流重试，真实模式需代理以规避浏览器 CORS。') +
+      '</div></div>';
+
+    html += '<div class="sec-title"><h2>飞书总账本状态</h2><span class="hint">原首页状态已收口到这里</span></div>';
+    html += '<div class="panel"><div class="note">' +
+      '当前模式：<b>' + (f.mode === 'mock' ? 'Mock 适配器（离线）' : '真实 Base') + '</b><br>' +
+      '上次同步：' + (f.lastSync ? esc(new Date(f.lastSync).toLocaleString('zh-CN', { hour12: false })) : '尚未同步') + '<br>' +
+      '结果：' + esc(f.lastResult || '—') + '</div>' +
+      '<div class="row wrap" style="margin-top:10px">' +
+      '<button class="btn sm" data-act="sync">立即同步</button>' +
+      '<button class="btn ghost sm" data-act="test-feishu">测试连接</button>' +
+      '</div></div>';
+
+    html += '<div class="sec-title"><h2>数据自检</h2><span class="hint">v1.1.1</span></div>';
+    html += '<div class="panel"><div class="note" id="selfTestBox">' +
+      '商品 ' + state.items.length + ' 个 · 记录 ' + state.records.length + ' 条 · 沙盘候选 ' + state.sandbox.options.length + ' 个 · 单位 ' + Object.keys(E.UNITS).length + ' 个<br>' +
+      '演示用例：11-01 10kg ¥300 → ¥30.00/kg、¥15.00/500g；11-03 10kg ¥500 → ¥50.00/kg、¥25.00/500g（+66.67%）。' +
+      '</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="selftest">运行自检</button></div></div>';
+
+    html += '<div class="sec-title"><h2>单位换算字典</h2><span class="hint">' + Object.keys(E.UNITS).length + ' 个单位</span></div>';
+    html += '<div class="panel"><div class="chips" style="max-height:180px;overflow:auto">' +
+      Object.keys(E.UNITS).map(function (k) {
+        return '<span class="chip sm" title="1 ' + esc(k) + ' = ' + E.UNITS[k].factor + ' ' + esc(E.GROUP_BASE_LABEL[E.UNITS[k].group]) + '">' + esc(E.UNITS[k].label) + '</span>';
+      }).join('') + '</div>' +
+      '<div class="hr"></div><div class="grid3">' +
+        '<label class="field" style="margin:0"><span>自定义单位名</span><input id="cuKey" placeholder="如 板"/></label>' +
+        '<label class="field" style="margin:0"><span>归属组</span><select id="cuGroup">' +
+          Object.keys(E.GROUP_LABEL).map(function (g) { return '<option value="' + g + '">' + E.GROUP_LABEL[g] + '</option>'; }).join('') +
+        '</select></label>' +
+        '<label class="field" style="margin:0"><span>= 多少原子量</span><input id="cuFactor" type="number" step="0.001" placeholder="如 24"/></label>' +
+      '</div><button class="btn ghost sm" data-act="add-unit">添加自定义单位</button></div>';
+
+    html += '<div class="sec-title"><h2>数据</h2><span class="hint">localStorage · 离线可用</span></div>';
+    html += '<div class="panel"><div class="row wrap">' +
+      '<button class="btn ghost" data-act="export">导出 JSON</button>' +
+      '<button class="btn ghost" data-act="import">导入 JSON</button>' +
+      '<button class="btn danger" data-act="reset">重置为演示数据</button>' +
+      '</div><div class="hr"></div><div class="note">' +
+      '商品 ' + state.items.length + ' 个 · 记录 ' + state.records.length + ' 条 · 沙盘候选 ' + state.sandbox.options.length + ' 个。<br>' +
+      '源码为单文件 H5，可直接双击打开；数据保存在浏览器本地，不联网也能用。' +
+      '</div></div>';
+
+    html += '<div class="sec-title"><h2>关于</h2></div><div class="panel"><div class="note">' +
+      '<b>好物算算 v' + APP_VERSION + '</b> · T-020 日常消耗品单价追踪与智能比价轻应用（v1.1 迭代）<br>' +
+      '计价引擎：双基准同屏折算（原子量 g / ml / 抽 / 个 / m）。<br>' +
+      '视觉：对齐全暖米白 #F7F5EE + 橘棕 #CF7A50 描边横幅 + 7 色马卡龙 Bento 卡片 + 5 栏底部导航。<br>' +
+      '交付：DeepSeek Harness（nyx），2026-11-07；终审以 Hermes 签发的 V-020 为准。' +
+      '</div></div>';
+    $('#view').innerHTML = html;
+  }
+
+  // ===================================================================== 渲染调度
+  var RENDER = { track: renderTrack, review: renderReview, todo: renderTodo, settings: renderSettings };
+
+  function render() {
+    $$('#nav button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === state.tab);
+    });
+    if (!RENDER[state.tab]) state.tab = 'todo';
+    RENDER[state.tab]();
+    save();
+  }
+
+  // ===================================================================== 弹窗（新增记录）
+  function openRecordSheet(prefill) {
+    var p = prefill || {};
+    var isRebuy = !!p.rebuyOf;
+    var html = '<div class="grab"></div><h3>' + (isRebuy ? '一键再买 · 更新价格' : '新增购买记录') + '</h3>';
+    html += '<form id="recForm">';
+    if (!isRebuy) {
+      html += '<label class="field"><span>已有商品</span><select id="rItem"><option value="">＋ 新建商品</option>' +
+        state.items.map(function (it) {
+          return '<option value="' + it.item_id + '"' + (p.itemId === it.item_id ? ' selected' : '') + '>' + esc(it.item_name) + '（#' + esc(it.category_tag) + '）</option>';
+        }).join('') + '</select></label>';
+      html += '<div id="newItemBox" class="' + (p.itemId ? 'hidden' : '') + '">' +
+        '<div class="grid2">' +
+          '<label class="field"><span>商品名</span><input id="niName" placeholder="如 网易严选全价猫粮 3.0"/></label>' +
+          '<label class="field"><span>大类</span><select id="niCategory"><option>宠物</option><option>日化</option><option>母婴</option><option>食品</option><option>其他</option></select></label>' +
+          '<label class="field"><span>品类标签</span><input id="niCat" placeholder="猫粮" autocomplete="off"/><div class="sug" id="sugCat"></div></label>' +
+          '<label class="field"><span>品牌标签</span><input id="niBrand" placeholder="网易严选" autocomplete="off"/><div class="sug" id="sugBrand"></div></label>' +
+
+        '</div></div>';
+    } else {
+      html += '<div class="note" style="margin-bottom:10px">商品：<b>' + esc(p.itemName) + '</b>（沿用规格，改价即可）</div>';
+    }
+    html += '<div class="grid2">' +
+      '<label class="field"><span>购买日期</span><input id="rDate" type="date" value="' + (p.date || today()) + '"/></label>' +
+      '<label class="field"><span>平台/渠道</span><input id="rPlatform" placeholder="京东自营" autocomplete="off" value="' + esc(p.platform || '') + '"/><div class="sug" id="sugPlatform"></div></label>' +
+      '<label class="field"><span>实付总价 ¥</span><input id="rPrice" type="number" step="0.01" placeholder="300" value="' + (p.price != null ? p.price : '') + '"/></label>' +
+      '<label class="field"><span>件数 / 包数</span><input id="rPack" type="number" step="0.01" value="' + (p.pack_count != null ? p.pack_count : 1) + '"/></label>' +
+      '<label class="field"><span>单件净含量</span><input id="rQty" type="number" step="0.01" value="' + (p.unit_qty != null ? p.unit_qty : 10) + '"/></label>' +
+      '<label class="field"><span>录入单位</span><select id="rUnit">' + unitOptions(p.unit || 'kg') + '</select></label>' +
+      '<label class="field"><span>赠品量</span><input id="rGift" type="number" step="0.01" value="' + (p.gift_qty != null ? p.gift_qty : 0) + '"/></label>' +
+      '<label class="field"><span>赠品单位</span><select id="rGiftUnit">' + unitOptions(p.gift_unit || p.unit || 'kg') + '</select></label>' +
+      '<label class="field"><span>主基准</span><select id="rPrimary">' + primaryOptions(p.primary || 'kg') + '</select></label>' +
+    '</div>';
+    html += '<div class="prev" id="rPrev"></div>';
+    html += '<div class="row"><button type="submit" class="btn block">保存记录</button>' +
+      '<button type="button" class="btn ghost" data-close="1">取消</button></div>';
+    html += '</form>';
+    showSheet(html);
+    attachSuggest('niCat', 'sugCat', 'cat');
+    attachSuggest('niBrand', 'sugBrand', 'brand');
+    attachSuggest('rPlatform', 'sugPlatform', 'platform');
+    var form = $('#recForm');
+    var sel = $('#rItem');
+    if (sel) {
+      sel.addEventListener('change', function () {
+        var box = $('#newItemBox');
+        if (box) box.style.display = sel.value ? 'none' : 'block';
+        if (sel.value) {
+          var it = itemById(sel.value);
+          if (it) {
+            $('#rUnit').value = guessUnit(it);
+            $('#rPrimary').value = it.primary_unit;
+          }
+        }
+        updatePrev();
+      });
+    }
+    ['rPrice', 'rPack', 'rQty', 'rGift'].forEach(function (id) { var el = $('#' + id); if (el) el.addEventListener('input', updatePrev); });
+    ['rUnit', 'rPrimary', 'rGiftUnit'].forEach(function (id) { var el = $('#' + id); if (el) el.addEventListener('change', updatePrev); });
+    var _unitTouched = false;
+    $('#rGiftUnit').addEventListener('change', function () { _unitTouched = true; });
+    $('#rUnit').addEventListener('change', function () {
+      if (!_unitTouched) $('#rGiftUnit').value = $('#rUnit').value;
+      updatePrev();
+    });
+    function currentItem() {
+      if (isRebuy) return itemById(p.itemId);
+      var sel = $('#rItem');
+      return sel && sel.value ? itemById(sel.value) : null;
+    }
+    function updatePrev() {
+      var unit = $('#rUnit').value, primary = $('#rPrimary').value;
+      var giftUnit = ($('#rGiftUnit') || {}).value || unit;
+      var draft = { pack_count: $('#rPack').value, unit_qty: $('#rQty').value, gift_qty: $('#rGift').value, amount_unit: unit, gift_unit: giftUnit, total_price: $('#rPrice').value };
+      var calc = E.computeRecord(draft, null);
+      var qty = calc.totalQuantity;
+      var atomic = calc.atomicQuantity;
+      var price = Number($('#rPrice').value);
+      var it = currentItem();
+      var primaryKey = primary;
+      var secondaries = E.scalesFor(unit).filter(function (s) { return s.key !== primaryKey; });
+      var sec = secondaries[0];
+      var html = '';
+      if (isFinite(price) && price > 0 && atomic > 0) {
+        if (calc.giftMismatch) html += '<div class="sub" style="color:#B0432F">⚠️ 赠品单位与主单位量纲不同，已忽略赠品，请改成同量纲（如 kg/g）或填 0。</div>';
+        html += '<div class="big">' + E.money(E.pricePer(price, atomic, E.scaleInfo(unit, primaryKey).atomic)) +
+          '<span style="font-size:12px;font-weight:600">' + E.scaleInfo(unit, primaryKey).short + '</span></div>' +
+          '<div class="sub">副基准 ' + E.money(E.pricePer(price, atomic, sec.atomic)) + sec.short +
+          ' · 总量 ' + E.round(qty, 3) + E.unit(unit).label + '（' + E.round(atomic, 1) + E.GROUP_BASE_LABEL[E.groupOf(unit)] + '）</div>';
+      } else {
+        html = '<div class="sub">填好价格与规格，这里实时显示双基准均价。</div>';
+      }
+      var itNow = currentItem() || (isRebuy ? itemById(p.itemId) : null);
+      if (itNow && E.groupOf(itNow.primary_unit) !== E.groupOf(unit)) {
+        html += '<div class="sub" style="margin-top:6px;color:#8A4223">⚠️ 该商品以往按「' + esc(E.unit(itNow.primary_unit).label) +
+          '」记录，本次填的是「' + esc(E.unit(unit).label) + '」，两者单位组不同，复盘走势会分开统计（不会互相覆盖）。</div>';
+      }
+      $('#rPrev').innerHTML = html;
+    }
+    updatePrev();
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var unit = $('#rUnit').value;
+      var giftUnit = ($('#rGiftUnit') || {}).value || unit;
+      var price = Number($('#rPrice').value);
+      var pack = Number($('#rPack').value);
+      var qty = Number($('#rQty').value);
+      var gift = Number($('#rGift').value) || 0;
+      if (gift > 0 && E.groupOf(giftUnit) !== E.groupOf(unit)) { toast('赠品单位与主单位量纲不同，请改一下'); return; }
+      if (!(price > 0) || !(pack > 0) || !(qty > 0)) { toast('价格、件数、单件量都要大于 0'); return; }
+      var item = currentItem();
+      if (!item) {
+        var name = ($('#niName').value || '').trim();
+        var catTag = ($('#niCat').value || '').trim();
+        if (!name || !catTag) { toast('新建商品至少填商品名和品类标签'); return; }
+        var brand = ($('#niBrand').value || '').trim() || '未标品牌';
+        item = {
+          item_id: nextId('ITEM-', state.items, 'item_id'),
+          item_name: name,
+          category: $('#niCategory').value,
+          category_tag: catTag,
+          brand_tag: brand,
+          series_tag: '',
+          tags: [catTag, brand],
+          primary_unit: $('#rPrimary').value,
+          secondary_unit: (E.scalesFor(unit).filter(function (s) { return s.key !== $('#rPrimary').value; })[0] || { key: '500g' }).key
+        };
+        state.items.push(item);
+      }
+      var rec = {
+        record_id: nextId('REC-', state.records, 'record_id'),
+        feishu_id: '',
+        item_id: item.item_id,
+        date: $('#rDate').value || today(),
+        platform: ($('#rPlatform').value || '').trim() || '未填渠道',
+        pack_count: pack, unit_qty: qty, gift_qty: gift, amount_unit: unit, gift_unit: giftUnit,
+        total_price: price
+      };
+      state.records.push(rec);
+      closeSheet(); render();
+      toast('已保存：' + E.money(E.computeRecord(rec, item).pricePerPrimary) + E.computeRecord(rec, item).primaryShort + '（记得同步飞书）');
+    });
+  }
+
+  function primaryOptions(selected) {
+    return ['kg', 'L', '100chou', 'ge', 'm'].map(function (k) {
+      return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>' + esc(E.UNITS[k].label) + '</option>';
+    }).join('');
+  }
+  function guessUnit(item) {
+    var p = item.primary_unit;
+    var g = E.groupOf(p);
+    return g === 'weight' ? 'kg' : g === 'volume' ? 'L' : g === 'sheet' ? 'chou' : g === 'length' ? 'm' : 'ge';
+  }
+
+  function showSheet(html) {
+    clearTimeout(showSheet._clear);
+    var s = $('#sheet');
+    s.innerHTML = html;
+    s.classList.add('show');
+    $('#mask').classList.add('show');
+  }
+  function closeSheet() {
+    $('#sheet').classList.remove('show');
+    $('#mask').classList.remove('show');
+    clearTimeout(showSheet._clear);
+    showSheet._clear = setTimeout(function () {
+      var s = $('#sheet');
+      if (s && !s.classList.contains('show')) s.innerHTML = '';
+    }, 300);
+  }
+
+  // ===================================================================== 自定义基准编辑器
+  function fmtNum(n) {
+    var v = Math.round(Number(n) * 1000) / 1000;
+    return String(v);
+  }
+  function naturalUnit(group) {
+    return group === 'weight' ? 'kg' : group === 'volume' ? 'L' : group === 'sheet' ? '抽' : group === 'length' ? 'm' : '个';
+  }
+  function unitCleanName(name) {
+    return String(name == null ? '' : name).replace(/[\(（].*?[\)）]/g, '').trim();
+  }
+  /** 把用户手输的单位名对上内置单位（键 / 全名 / 去括号名 / 括号内英文），对不上返回 null */
+  function resolveUnitName(name) {
+    var q = String(name || '').trim();
+    if (!q) return null;
+    var lower = q.toLowerCase();
+    var keys = Object.keys(E.UNITS);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].toLowerCase() === lower) return { key: keys[i], factor: E.UNITS[keys[i]].factor, group: E.UNITS[keys[i]].group };
+    }
+    for (var j = 0; j < keys.length; j++) {
+      var label = E.UNITS[keys[j]].label;
+      var en = (label.match(/[\(（]([^\)）]*)[\)）]/) || [])[1] || '';
+      var base = label.replace(/[\(（].*?[\)）]/g, '').trim();
+      if (label.toLowerCase() === lower || base.toLowerCase() === lower || (en && en.toLowerCase() === lower)) {
+        return { key: keys[j], factor: E.UNITS[keys[j]].factor, group: E.UNITS[keys[j]].group };
+      }
+    }
+    return null;
+  }
+  function autoScaleLabel(n, name) {
+    var clean = unitCleanName(name) || '单位';
+    return '每 ' + fmtNum(n) + ' ' + clean;
+  }
+  function autoScaleShort(n, name) {
+    var clean = unitCleanName(name) || '单位';
+    return '/' + (Number(n) === 1 ? '' : fmtNum(n)) + clean;
+  }
+  function scaleDisplayName(scale) {
+    if (E.UNITS[scale.unit]) return E.UNITS[scale.unit].label;
+    return scale.unit || '';
+  }
+  function scaleFactorOf(scale) {
+    if (scale.unitFactor > 0) return scale.unitFactor;
+    if (E.UNITS[scale.unit]) return E.UNITS[scale.unit].factor;
+    return 1;
+  }
+
+  function openScaleCreator(group) {
+    var name = naturalUnit(group);
+    var r = resolveUnitName(name);
+    openScaleSheet({ mode: 'new', group: group, n: 1, unitName: name, factor: r ? r.factor : 1, label: '' });
+  }
+  function openScaleEditor(key, group) {
+    var list = E.SCALES[group] || E.SCALES.count;
+    var sc = list.filter(function (x) { return x.key === key; })[0];
+    if (!sc) return;
+    var f = scaleFactorOf(sc);
+    var n = Math.round(sc.atomic / f * 1000) / 1000;
+    openScaleSheet({ mode: 'edit', group: group, key: key, n: n, unitName: scaleDisplayName(sc), factor: f, label: sc.label });
+  }
+  function uniqueScaleKey(group) {
+    var base = 'cs_' + Date.now().toString(36), key = base, i = 1;
+    var list = E.SCALES[group] || [];
+    while (list.some(function (x) { return x.key === key; })) key = base + '_' + (i++);
+    return key;
+  }
+  function openScaleSheet(ctx) {
+    var group = ctx.group;
+    var baseLabel = E.GROUP_BASE_LABEL[group] || '个';
+    var suggest = unitsOfGroup(group).map(function (k) { return E.UNITS[k].label; })
+      .concat(['包', '提', '箱', '件', '个', '袋'])
+      .filter(function (v, i, a) { return a.indexOf(v) === i; });
+    var html = '<div class="grab"></div><h3>' + (ctx.mode === 'new' ? '新增自定义基准' : '编辑基准单位') + '</h3>' +
+      '<div class="note" style="margin-bottom:10px">基准 =「每 N 个某单位」，单位和数量都手填。比如纸巾按「每 1 包」比（下方填 1 包 = 多少抽），需要跨品牌对齐规格时再切「每 100 抽」。</div>' +
+      '<label class="field"><span>显示名称</span><input id="scLabel" placeholder="留空自动生成，如 每 1 包" value="' + esc(ctx.label || '') + '"/></label>' +
+      '<div class="grid2">' +
+        '<label class="field"><span>数量 N</span><input id="scAtomic" type="number" step="0.01" min="0.01" value="' + esc(ctx.n) + '"/></label>' +
+        '<label class="field"><span>单位（可手输）</span>' +
+          '<input id="scUnit" list="scUnitList" autocomplete="off" placeholder="包 / 抽 / 千克 / 张 …" value="' + esc(ctx.unitName) + '"/>' +
+          '<datalist id="scUnitList">' + suggest.map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('') + '</datalist>' +
+        '</label>' +
+        '<label class="field" style="grid-column:1 / -1"><span id="scFactorLabel">1 个单位 = 多少 ' + esc(baseLabel) + '</span>' +
+          '<input id="scFactor" type="number" step="0.0001" min="0.0001" value="' + esc(ctx.factor) + '"/>' +
+        '</label>' +
+      '</div>' +
+      '<div class="prev" id="scPrev"></div>' +
+      '<div class="row">' +
+        '<button class="btn block" id="scSave">保存基准</button>' +
+        (ctx.mode === 'edit' && isCustomScale(group, ctx.key) ? '<button class="btn danger" id="scDel">删除</button>' : '') +
+        '<button class="btn ghost" data-close="1">取消</button>' +
+      '</div>';
+    showSheet(html);
+
+    var labelInput = $('#scLabel');
+    var labelTouched = false;
+    var factorTouched = false;
+    labelInput.addEventListener('input', function () { labelTouched = true; });
+
+    function currentName() { return ($('#scUnit').value || '').trim(); }
+    function currentFactor() {
+      var v = Number($('#scFactor').value);
+      if (v > 0) return v;
+      var r = resolveUnitName(currentName());
+      return r ? r.factor : 1;
+    }
+    function preview() {
+      var n = Number($('#scAtomic').value);
+      var name = currentName();
+      var factor = currentFactor();
+      var atomic = n * factor;
+      $('#scFactorLabel').textContent = '1 个「' + (name || '单位') + '」= 多少 ' + baseLabel;
+      if (!labelTouched && n > 0 && name) labelInput.value = autoScaleLabel(n, name);
+      var resolved = resolveUnitName(name);
+      var crossNote = '';
+      if (resolved && resolved.group !== group) {
+        crossNote = '<div class="sub" style="margin-top:4px">「' + esc(name) + '」属于「' + esc(E.GROUP_LABEL[resolved.group]) + '」组，这里只按你填的换算系数折算成 ' + esc(baseLabel) + '，不会改动该单位本身的定义。</div>';
+      } else if (name && !resolved) {
+        crossNote = '<div class="sub" style="margin-top:4px">「' + esc(name) + '」是自定义单位，请填准 1 个等于多少 ' + esc(baseLabel) + '。</div>';
+      }
+      $('#scPrev').innerHTML = (n > 0 && factor > 0)
+        ? '<div class="big">' + esc(autoScaleLabel(n, name || '单位')) + '</div><div class="sub">胶囊简写 ' + esc(autoScaleShort(n, name || '单位')) +
+          ' · 每条记录按 ' + fmtNum(n) + ' × ' + fmtNum(factor) + ' = ' + fmtNum(atomic) + ' ' + esc(baseLabel) + ' 折算</div>' + crossNote
+        : '<div class="sub">数量与换算系数都要大于 0</div>';
+    }
+    $('#scUnit').addEventListener('input', function () {
+      var r = resolveUnitName(currentName());
+      if (r && !factorTouched) $('#scFactor').value = fmtNum(r.factor);
+      preview();
+    });
+    $('#scFactor').addEventListener('input', function () { factorTouched = true; preview(); });
+    $('#scAtomic').addEventListener('input', preview);
+    preview();
+
+    $('#scSave').addEventListener('click', function () {
+      var n = Number($('#scAtomic').value);
+      var name = currentName();
+      var factor = Number($('#scFactor').value);
+      if (!(n > 0)) { toast('数量要大于 0'); return; }
+      if (!name) { toast('单位不能为空'); return; }
+      if (!(factor > 0)) { toast('换算系数要大于 0'); return; }
+      var atomic = n * factor;
+      var label = ($('#scLabel').value || '').trim() || autoScaleLabel(n, name);
+      var short = autoScaleShort(n, name);
+      var payload = { label: label, short: short, atomic: atomic, unit: name, unitFactor: factor };
+      if (ctx.mode === 'new') {
+        var key = uniqueScaleKey(group);
+        var sc = { key: key, label: label, short: short, atomic: atomic, unit: name, unitFactor: factor };
+        (E.SCALES[group] || (E.SCALES[group] = [])).push(sc);
+        state.scalesCustom = state.scalesCustom || [];
+        state.scalesCustom.push({ group: group, key: key, label: label, short: short, atomic: atomic, unit: name, unitFactor: factor });
+        state.chart.scale = key;
+        toast('已新增基准：' + label);
+      } else {
+        var lst = E.SCALES[group] || [];
+        var target = lst.filter(function (x) { return x.key === ctx.key; })[0];
+        if (target) { target.label = label; target.short = short; target.atomic = atomic; target.unit = name; target.unitFactor = factor; }
+        if (isCustomScale(group, ctx.key)) {
+          state.scalesCustom.forEach(function (x) {
+            if (x.group === group && x.key === ctx.key) { x.label = label; x.short = short; x.atomic = atomic; x.unit = name; x.unitFactor = factor; }
+          });
+        } else {
+          state.scalesEdit = state.scalesEdit || {};
+          state.scalesEdit[group + ':' + ctx.key] = payload;
+        }
+        state.chart.scale = ctx.key;
+        toast('基准已更新：' + label);
+      }
+      save();
+      closeSheet();
+      render();
+    });
+
+    var del = $('#scDel');
+    if (del) del.addEventListener('click', function () {
+      var lst = E.SCALES[group] || [];
+      var i = lst.findIndex(function (x) { return x.key === ctx.key; });
+      if (i >= 0) lst.splice(i, 1);
+      state.scalesCustom = (state.scalesCustom || []).filter(function (x) { return !(x.group === group && x.key === ctx.key); });
+      if (state.chart.scale === ctx.key) state.chart.scale = (E.SCALES[group] || E.SCALES.count)[0].key;
+      save(); closeSheet(); render(); toast('已删除该自定义基准');
+    });
+  }
+
+  // ===================================================================== 输入联想（近期填过的标签）
+  function suggestValues(kind) {
+    var key = kind === 'cat' ? 'category_tag' : kind === 'brand' ? 'brand_tag' : kind === 'series' ? 'series_tag' : 'platform';
+    var out = [];
+    if (kind === 'platform') {
+      state.records.forEach(function (r) { if (r.platform && out.indexOf(r.platform) === -1) out.push(r.platform); });
+      return out;
+    }
+    state.items.forEach(function (it) {
+      var v = it[key];
+      if (v && out.indexOf(v) === -1) out.push(v);
+    });
+    return out;
+  }
+  function attachSuggest(inputId, boxId, kind) {
+    var input = $('#' + inputId), box = $('#' + boxId);
+    if (!input || !box) return;
+    function paint() {
+      var v = String(input.value || '').trim().toLowerCase();
+      var list = suggestValues(kind).filter(function (x) {
+        return !v || String(x).toLowerCase().indexOf(v) !== -1;
+      }).slice(0, 12);
+      if (!list.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
+      box.innerHTML = list.map(function (x) {
+        return '<button type="button" class="chip sm" data-sug-pick="' + esc(x) + '">' + esc(x) + '</button>';
+      }).join('');
+      box.style.display = 'flex';
+    }
+    input.addEventListener('focus', paint);
+    input.addEventListener('click', paint);
+    input.addEventListener('input', paint);
+    box.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-sug-pick]');
+      if (!b) return;
+      ev.preventDefault();
+      input.value = b.getAttribute('data-sug-pick');
+      box.style.display = 'none';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
+  // ===================================================================== 事件
+  function setFilter(level, value) {
+    if (level === 'cat') {
+      state.filters.category = value;
+      state.filters.brand = 'all';
+      state.filters.series = 'all';
+    } else if (level === 'brand') {
+      state.filters.brand = value;
+      state.filters.series = 'all';
+    } else {
+      state.filters.series = value;
+    }
+    render();
+  }
+
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest('[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-act],[data-del-opt],[data-archive],[data-close]');
+    if (!t) return;
+    var nav = t.getAttribute('data-nav');
+    if (nav) { state.tab = nav; window.scrollTo({ top: 0 }); render(); return; }
+    var tab = t.getAttribute('data-tab');
+    if (tab) { state.tab = tab; window.scrollTo({ top: 0 }); render(); return; }
+
+    var filt = t.getAttribute('data-filter');
+    if (filt != null) {
+      var parent = t.parentElement;
+      var level = parent.id === 'f-cat' ? 'cat' : parent.id === 'f-brand' ? 'brand' : parent.id === 'f-series' ? 'series' : '';
+      if (level) {
+        var parts = t.getAttribute('data-filter').split('|');
+        if (parts.length === 2) { level = parts[0]; filt = parts[1]; }
+        setFilter(level, filt);
+      }
+      return;
+    }
+
+    var seg = t.getAttribute('data-seg');
+    if (seg) {
+      var v = t.getAttribute('data-value');
+      if (seg === 'view') state.viewMode = v;
+      else if (seg === 'chartType') { state.chart.type = v; render(); return; }
+      else if (seg === 'fMode') state.feishu.mode = v;
+      render(); return;
+    }
+
+    var of = t.getAttribute('data-open-filter');
+    if (of) { openFilterSheet(of, t.getAttribute('data-scope') || 'track'); return; }
+    var fp = t.getAttribute('data-filter-pick');
+    if (fp) { applyFilterPick(fp); return; }
+    var tgs = t.getAttribute('data-toggle-search');
+    if (tgs != null) {
+      var src = filterSource(tgs === 'sandbox' ? 'sandbox' : 'track');
+      src.showSearch = !src.showSearch;
+      render();
+      if (src.showSearch) { var kk = document.querySelector('[data-search="' + tgs + '"]'); if (kk) kk.focus(); }
+      return;
+    }
+    if (t.getAttribute('data-jump-review') != null) {
+      state.chart = state.chart || { type: 'line', scale: state.sandbox.scale };
+      state.chart.target = state.sandbox.target;
+      state.chart.scale = state.sandbox.scale;
+      state.chart.scalesOpen = false;
+      state.tab = 'review';
+      render();
+      window.scrollTo({ top: 0 });
+      return;
+    }
+
+    var chanOpen = t.getAttribute('data-chan-open');
+    if (chanOpen != null) { openChanPicker(chanOpen); return; }
+    var pick = t.getAttribute('data-pick');
+    if (pick) {
+      var sep = pick.indexOf('|');
+      var pid = pick.slice(0, sep), pname = pick.slice(sep + 1);
+      var popt = state.sandbox.options.filter(function (o) { return o.id === pid; })[0];
+      if (popt) {
+        var plist = optPlatforms(popt).slice();
+        var idx = plist.indexOf(pname);
+        if (idx === -1) plist.push(pname); else plist.splice(idx, 1);
+        popt.platforms = plist;
+        save();
+        $('#sheet').innerHTML = chanPickerHtml(pid);
+      }
+      return;
+    }
+    var chanNew = t.getAttribute('data-chan-new');
+    if (chanNew != null) { showSheet(chanCreateForm(chanNew)); bindChanNewInput(chanNew); return; }
+    var chanCreate = t.getAttribute('data-chan-create');
+    if (chanCreate != null) { createChannel(chanCreate); return; }
+    var chanBack = t.getAttribute('data-chan-back');
+    if (chanBack != null) { $('#sheet').innerHTML = chanPickerHtml(chanBack); return; }
+    if (t.getAttribute('data-chan-done') != null) { closeSheet(); render(); return; }
+
+    var editScale = t.getAttribute('data-edit-scale');
+    if (editScale) { openScaleEditor(editScale, state.chart._group || 'weight'); return; }
+    if (t.getAttribute('data-new-scale') != null) { openScaleCreator(state.chart._group || 'weight'); return; }
+    if (t.getAttribute('data-toggle-scales') != null) {
+      state.chart.scalesOpen = !state.chart.scalesOpen;
+      render();
+      return;
+    }
+
+    var scale = t.getAttribute('data-scale');
+    if (scale) { state.chart.scale = scale; state.chart.scalesOpen = false; render(); return; }
+
+    var rebuy = t.getAttribute('data-rebuy');
+    if (rebuy) {
+      var r = state.records.filter(function (x) { return x.record_id === rebuy; })[0];
+      var it = r ? itemById(r.item_id) : null;
+      if (!r || !it) return;
+      openRecordSheet({ rebuyOf: r.record_id, itemId: r.item_id, itemName: it.item_name, date: today(), platform: r.platform, pack_count: r.pack_count, unit_qty: r.unit_qty, gift_qty: r.gift_qty, unit: r.amount_unit, primary: it.primary_unit });
+      return;
+    }
+
+    var del = t.getAttribute('data-del-opt');
+    if (del) {
+      state.sandbox.options = state.sandbox.options.filter(function (o) { return o.id !== del; });
+      render(); return;
+    }
+
+    var arc = t.getAttribute('data-archive');
+    if (arc) { archiveOption(arc); return; }
+
+    var act = t.getAttribute('data-act');
+    if (!act) return;
+    if (act === 'new-record') { openRecordSheet({}); return; }
+    if (act === 'add-opt') { addOption(); return; }
+    if (act === 'export') { exportJson(); return; }
+    if (act === 'import') { importJson(); return; }
+    if (act === 'reset') { resetAll(); return; }
+    if (act === 'save-feishu') { saveFeishu(false); return; }
+    if (act === 'test-feishu') { testFeishu(); return; }
+    if (act === 'sync') { doSync(); return; }
+    if (act === 'clear-secret') {
+      state.feishu.appId = ''; state.feishu.appSecret = ''; save(); renderSettings();
+      toast('已清除本机凭证'); return;
+    }
+    if (act === 'add-unit') { addUnit(); return; }
+    if (act === 'selftest') { runSelfTest(); return; }
+    var close = t.getAttribute('data-close');
+    if (close) { closeSheet(); return; }
+  });
+
+  // 搜索框
+  document.addEventListener('input', function (ev) {
+    var el = ev.target;
+    if (el.hasAttribute && el.hasAttribute('data-search')) {
+      var scope = el.getAttribute('data-search');
+      filterSource(scope).keyword = el.value;
+      updateBody(scope);
+      save();
+      return;
+    }
+    if (el.hasAttribute('data-opt')) {
+      var id = el.getAttribute('data-opt');
+      var f = el.getAttribute('data-f');
+      var opt = state.sandbox.options.filter(function (o) { return o.id === id; })[0];
+      if (!opt) return;
+      opt[f] = (f === 'platform' || f === 'unit' || f === 'gift_unit') ? el.value : (Number(el.value) || 0);
+      refreshSandbox();
+      return;
+    }
+  });
+
+  document.addEventListener('change', function (ev) {
+    var el = ev.target;
+    if (el.id === 'benchTarget') { state.sandbox.target = el.value; render(); return; }
+    if (el.id === 'sandboxScale') { state.sandbox.scale = el.value; render(); return; }
+    if (el.id === 'chartTarget') { state.chart.target = el.value; render(); return; }
+    if (el.hasAttribute('data-opt')) {
+      var id = el.getAttribute('data-opt');
+      var f = el.getAttribute('data-f');
+      var opt = state.sandbox.options.filter(function (o) { return o.id === id; })[0];
+      if (!opt) return;
+      if (f === 'unit') {
+        var oldGroup = E.groupOf(opt.unit);
+        var oldUnit = opt.unit;
+        opt.unit = el.value;
+        if (!opt.gift_unit || opt.gift_unit === oldUnit) opt.gift_unit = el.value;
+        if (E.groupOf(opt.unit) !== oldGroup) state.sandbox.scale = E.scalesFor(opt.unit)[0].key;
+        render();
+        return;
+      }
+      if (f === 'gift_unit') {
+        opt.gift_unit = el.value;
+        render();
+        return;
+      }
+      opt[f] = (f === 'platform' || f === 'unit' || f === 'gift_unit') ? el.value : (Number(el.value) || 0);
+      refreshSandbox();
+      return;
+    }
+  });
+
+  $('#mask').addEventListener('click', closeSheet);
+
+  function chanLabel(opt) {
+    var list = optPlatforms(opt);
+    return list.length ? list.join(' + ') : '选择渠道（可多选）';
+  }
+  function chanPickerHtml(id) {
+    var opt = state.sandbox.options.filter(function (o) { return o.id === id; })[0];
+    if (!opt) return '';
+    var sel = optPlatforms(opt);
+    var all0 = platformChoices();
+    var all = sel.filter(function (p) { return all0.indexOf(p) !== -1; })
+      .concat(all0.filter(function (p) { return sel.indexOf(p) === -1; }));
+    return '<div class="grab"></div><h3>选择渠道</h3>' +
+      '<div class="note">可多选，已选 ' + sel.length + ' 个；最下方可添加自定义渠道。</div>' +
+      '<div class="pick-list">' + all.map(function (p) {
+        var on = sel.indexOf(p) !== -1;
+        return '<button type="button" class="pick-row ' + (on ? 'on' : '') + '" data-pick="' + esc(id + '|' + p) + '">' +
+          '<span>' + esc(p) + '</span><i class="tick">✓</i></button>';
+      }).join('') + '</div>' +
+      '<button type="button" class="pick-row add-row" data-chan-new="' + esc(id) + '">＋ 添加自定义渠道</button>' +
+      '<div class="row" style="margin-top:12px"><button type="button" class="btn block" data-chan-done="1">完成</button></div>';
+  }
+  function openChanPicker(id) {
+    showSheet(chanPickerHtml(id));
+  }
+  function chanCreateForm(id) {
+    return '<div class="grab"></div><h3>添加自定义渠道</h3>' +
+      '<label class="field"><span>渠道名称</span><input id="chanNew" autocomplete="off" placeholder="如 山姆会员店 / 抖音超值购"/></label>' +
+      '<div class="row"><button type="button" class="btn block" data-chan-create="' + esc(id) + '">添加</button>' +
+      '<button type="button" class="btn ghost" data-chan-back="' + esc(id) + '">返回</button></div>';
+  }
+  function bindChanNewInput(id) {
+    var inp = document.getElementById('chanNew');
+    if (!inp) return;
+    inp.focus();
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); createChannel(id); }
+    });
+  }
+  function createChannel(id) {
+    var inp = document.getElementById('chanNew');
+    if (!inp) return;
+    var v = inp.value.trim();
+    if (!v) { toast('先填渠道名'); return; }
+    state.channels = state.channels || [];
+    if (state.channels.indexOf(v) === -1) state.channels.push(v);
+    var opt = state.sandbox.options.filter(function (o) { return o.id === id; })[0];
+    if (opt) {
+      var list = optPlatforms(opt).slice();
+      if (list.indexOf(v) === -1) list.push(v);
+      opt.platforms = list;
+    }
+    save();
+    $('#sheet').innerHTML = chanPickerHtml(id);
+    toast('已添加渠道：' + v);
+  }
+
+  function addOption() {
+    var used = state.sandbox.options.map(function (o) { return o.id; });
+    var letter = '';
+    for (var i = 0; i < 26; i++) {
+      letter = String.fromCharCode(65 + i);
+      if (used.indexOf('OPT-' + letter) === -1) break;
+    }
+    var unit = (state.sandbox.options[0] || {}).unit || 'kg';
+    state.sandbox.options.push({
+      id: 'OPT-' + letter, name: '方案 ' + letter, platforms: [], note: '',
+      price: 0, pack_count: 1, unit_qty: 1, gift_qty: 0, unit: unit
+    });
+    render();
+    toast('已添加「方案 ' + letter + '」，填价格与规格即可比价');
+  }
+
+  function archiveOption(id) {
+    var opt = state.sandbox.options.filter(function (o) { return o.id === id; })[0];
+    if (!opt) return;
+    var bench = benchmarkFor(state.sandbox.target);
+    var rows = E.compareOptions(state.sandbox.options, bench.stats, state.sandbox.scale);
+    var row = rows.filter(function (r) { return r.id === id; })[0];
+    if (!row) { toast('这个方案还没填价格'); return; }
+    var target = state.sandbox.target;
+    var item;
+    if (target.indexOf('item:') === 0) item = itemById(target.slice(5));
+    if (!item) {
+      var catTag = target.indexOf('cat:') === 0 ? target.slice(4) : '猫粮';
+      item = state.items.filter(function (x) { return x.category_tag === catTag; })[0];
+    }
+    if (!item) { toast('找不到可归档的商品'); return; }
+    var rec = {
+      record_id: nextId('REC-', state.records, 'record_id'),
+      feishu_id: '',
+      item_id: item.item_id,
+      date: today(),
+      platform: optPlatforms(opt).join(' + ') || '待购沙盘',
+      pack_count: opt.pack_count,
+      unit_qty: opt.unit_qty,
+      gift_qty: opt.gift_qty,
+      amount_unit: opt.unit,
+      gift_unit: opt.gift_unit || opt.unit,
+      total_price: opt.price
+    };
+    state.records.push(rec);
+    save();
+    state.highlightRecordId = rec.record_id;
+    toast('已转入已购档案，正在同步飞书…');
+    Feishu.syncAll().then(function (res) {
+      state.feishu.lastResult = res.msg;
+      save();
+      render();
+      toast('已归档并同步：' + res.msg, 2600);
+    }).catch(function (err) {
+      state.feishu.lastResult = '同步失败：' + err.message;
+      state.feishu.lastSync = '';
+      save(); render();
+      toast('归档成功，但飞书同步失败：' + err.message, 3200);
+    });
+  }
+
+  function saveFeishu(silent) {
+    state.feishu.appId = ($('#fAppId') || {}).value || '';
+    var sec = ($('#fAppSecret') || {}).value;
+    if (sec) state.feishu.appSecret = sec;
+    state.feishu.appToken = ($('#fAppToken') || {}).value || state.feishu.appToken;
+    state.feishu.proxyBase = ($('#fProxy') || {}).value || '';
+    state.feishu.itemsTable = ($('#fItemsTable') || {}).value || state.feishu.itemsTable;
+    state.feishu.recordsTable = ($('#fRecordsTable') || {}).value || state.feishu.recordsTable;
+    save();
+    if (!silent) toast('飞书配置已保存到本机');
+  }
+
+  function testFeishu() {
+    saveFeishu(true);
+    var f = state.feishu;
+    if (f.mode === 'mock') {
+      Mock.delay().then(function () {
+        var db = Mock.read();
+        state.feishu.lastResult = 'Mock 连接正常：商品 ' + db.items.length + ' / 记录 ' + db.records.length + '（rev ' + db.rev + '）';
+        save(); render(); toast('Mock 适配器正常');
+      });
+      return;
+    }
+    Feishu.token().then(function () { toast('飞书租户鉴权成功'); state.feishu.lastResult = '租户 token 获取成功'; save(); render(); })
+      .catch(function (e) { toast('连接失败：' + e.message, 3200); state.feishu.lastResult = '连接失败：' + e.message; save(); render(); });
+  }
+
+  function doSync() {
+    saveFeishu(true);
+    toast('同步中…');
+    Feishu.syncAll().then(function (res) {
+      state.feishu.lastResult = res.msg + '，耗时 ' + res.ms + 'ms';
+      save(); render();
+      toast(res.msg, 2800);
+    }).catch(function (e) {
+      state.feishu.lastResult = '同步失败：' + e.message;
+      save(); render();
+      toast('同步失败：' + e.message, 3200);
+    });
+  }
+
+  function addUnit() {
+    var key = ($('#cuKey').value || '').trim();
+    var group = $('#cuGroup').value;
+    var factor = Number($('#cuFactor').value);
+    if (!key) { toast('填个单位名'); return; }
+    if (!(factor > 0)) { toast('换算系数要大于 0'); return; }
+    if (E.UNITS[key]) { toast('这个单位已存在'); return; }
+    var u = { label: key, group: group, factor: factor };
+    E.UNITS[key] = u;
+    state.customUnits[key] = u;
+    save(); render(); toast('已添加：1 ' + key + ' = ' + factor + ' ' + E.GROUP_BASE_LABEL[group]);
+  }
+
+  function exportJson() {
+    var data = { app: 'T-020', version: APP_VERSION, exported_at: new Date().toISOString(), items: state.items, records: state.records, sandbox: state.sandbox, customUnits: state.customUnits };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'T-020-consumables-' + today() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+    toast('已导出 JSON');
+  }
+
+  function importJson() {
+    var input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,application/json';
+    input.onchange = function () {
+      var file = input.files[0];
+      if (!file) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        try {
+          var d = JSON.parse(fr.result);
+          if (!d.items || !d.records) throw new Error('缺少 items / records');
+          state.items = d.items; state.records = d.records;
+          if (d.sandbox) state.sandbox = d.sandbox;
+          if (d.customUnits) {
+            state.customUnits = d.customUnits;
+            Object.keys(d.customUnits).forEach(function (k) { E.UNITS[k] = d.customUnits[k]; });
+          }
+          save(); render(); toast('导入成功：' + state.records.length + ' 条记录');
+        } catch (e) { toast('导入失败：' + e.message, 3000); }
+      };
+      fr.readAsText(file);
+    };
+    input.click();
+  }
+
+  function resetScales() {
+    Object.keys(E.SCALES).forEach(function (k) { delete E.SCALES[k]; });
+    var snap = JSON.parse(JSON.stringify(BASE_SCALES));
+    Object.keys(snap).forEach(function (k) { E.SCALES[k] = snap[k]; });
+    state.scalesCustom = [];
+    state.scalesEdit = {};
+  }
+
+  function migrateSandboxOptions() {
+    (state.sandbox.options || []).forEach(function (opt) {
+      if (!Array.isArray(opt.platforms)) opt.platforms = opt.platform ? [opt.platform] : [];
+      delete opt.platform;
+    });
+    if (!Array.isArray(state.channels)) state.channels = [];
+  }
+  function optPlatforms(opt) {
+    if (Array.isArray(opt.platforms)) return opt.platforms;
+    return opt.platform ? [opt.platform] : [];
+  }
+  function platformChoices() {
+    var out = [];
+    function push(v) {
+      v = String(v || '').trim();
+      if (v && out.indexOf(v) === -1) out.push(v);
+    }
+    state.records.forEach(function (r) { String(r.platform || '').split(/\s*\+\s*/).forEach(push); });
+    (state.channels || []).forEach(push);
+    (state.sandbox.options || []).forEach(function (o) { optPlatforms(o).forEach(push); });
+    return out;
+  }
+
+  function applySeeds() {
+    resetScales();
+    state.channels = [];
+    state.items = JSON.parse(JSON.stringify(SEED_ITEMS));
+    state.records = JSON.parse(JSON.stringify(SEED_RECORDS));
+    state.sandbox = { scale: 'kg', target: 'cat:猫粮', options: JSON.parse(JSON.stringify(SEED_OPTIONS)) };
+    state.filters = { keyword: '', category: 'all', brand: 'all', series: 'all' };
+    state.chart = { type: 'line', scale: 'kg', target: 'cat:猫粮' };
+    state.feishu.lastSync = ''; state.feishu.lastResult = '';
+  }
+
+  function resetAll() {
+    if (!window.confirm('重置会清空本机改动，恢复演示数据（含 11-01 / 11-03 两条用例）。继续？')) return;
+    applySeeds();
+    save(); render(); toast('已恢复演示数据');
+  }
+
+  // ===================================================================== 启动
+  load();
+  if (state.tab === 'review') { /* 复用已保存的图表设置 */ }
+  render();
+
+  // 图表随窗口尺寸重排
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      if (state.tab === 'review') renderReview();
+    }, 180);
+  });
+
+  // 便于自动化测试与排障
+  function selfTestResults() {
+    var out = [];
+    var r1 = E.computeRecord({ pack_count: 1, unit_qty: 10, gift_qty: 0, amount_unit: 'kg', total_price: 300 }, { primary_unit: 'kg', secondary_unit: '500g' });
+    var r2 = E.computeRecord({ pack_count: 1, unit_qty: 10, gift_qty: 0, amount_unit: 'kg', total_price: 500 }, { primary_unit: 'kg', secondary_unit: '500g' });
+    out.push(['用例1 30.00/kg', Math.abs(r1.pricePerPrimary - 30) < 1e-9]);
+    out.push(['用例1 15.00/500g', Math.abs(r1.pricePerSecondary - 15) < 1e-9]);
+    out.push(['用例2 50.00/kg', Math.abs(r2.pricePerPrimary - 50) < 1e-9]);
+    out.push(['用例2 25.00/500g', Math.abs(r2.pricePerSecondary - 25) < 1e-9]);
+    out.push(['用例2 +66.67%', Math.abs(E.round(E.changePct(50, 30), 2) - 66.67) < 1e-9]);
+    out.push(['单位字典 35+', Object.keys(E.UNITS).length >= 35]);
+    var f3 = E.filterRecords(state.records, state.items, { category: '猫粮', brand: '网易严选' });
+    var allFirst = E.filterRecords(state.records, state.items, { category: '猫粮' }).length;
+    out.push(['两级筛选可用', f3.length > 0 && f3.length <= allFirst]);
+    return out;
+  }
+  function runSelfTest() {
+    var box = $('#selfTestBox');
+    if (!box) return;
+    var res = selfTestResults();
+    box.innerHTML = res.map(function (it) {
+      return '<span class="badge ' + (it[1] ? 'good' : 'bad') + '" style="margin:2px 4px 2px 0">' + (it[1] ? '✓ ' : '✗ ') + esc(it[0]) + '</span>';
+    }).join('') + '<div style="margin-top:8px">共 ' + res.length + ' 项，通过 ' + res.filter(function (x) { return x[1]; }).length + ' 项。</div>';
+    toast('自检：' + res.filter(function (x) { return x[1]; }).length + '/' + res.length + ' 通过');
+  }
+
+  window.T020App = {
+    state: state, render: render, E: E, Feishu: Feishu, Mock: Mock,
+    scaleTools: { create: openScaleCreator, edit: openScaleEditor },
+    selfTestList: selfTestResults,
+    hardReset: function () {
+      localStorage.removeItem(STORE_KEY);
+      localStorage.removeItem(MOCK_KEY);
+      applySeeds();
+      render();
+    },
+    version: APP_VERSION,
+    selftest: selfTestResults,
+  };
+})();
+</script>
+</body>
+</html>
