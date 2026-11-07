@@ -675,7 +675,7 @@ body.sheet-open{overflow:hidden}
   };
 });
 </script>
-<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T11:21:36.006Z',builder:'DeepSeek Harness (nyx)'};
+<script>window.__T020_BUILD__={version:'1.1.0',built_at:'2026-11-07T16:17:46.599Z',builder:'DeepSeek Harness (nyx)'};
 /* =========================================================================
  * T-020 v1.1 · 应用层（UI / 状态 / 飞书联调）
  * 依赖：window.T020Engine（计价引擎）、可选 window.echarts（图表，失败自动降级 SVG）
@@ -726,6 +726,7 @@ body.sheet-open{overflow:hidden}
     sortBy: 'date', sortDir: 'desc',
     chart: { type: 'line', scale: 'kg', target: 'cat:猫粮' },
     sandbox: { scale: 'kg', target: 'pool:猫粮~all~', category: '猫粮', brand: 'all', options: SEED_OPTIONS.slice() },
+    settingsView: 'menu',
     scalesCustom: [],
     scalesEdit: {},
     channels: [],
@@ -1672,11 +1673,38 @@ body.sheet-open{overflow:hidden}
     return txt;
   }
 
-  // ===================================================================== 视图：设置
-  function renderSettings() {
+  // ===================================================================== 视图：设置（二级菜单）
+  function settingsHeader(title, sub) {
+    return '<div class="row" style="margin:0 0 10px">' +
+      '<button class="chip" data-sub="menu">‹ 设置</button></div>' +
+      pageHead(title, sub);
+  }
+
+  function renderSettingsMenu() {
     var f = state.feishu;
-    var html = pageHead('设置', '飞书账本 · 单位字典 · 数据自检');
-    html += '<div class="sec-title"><h2>飞书多维表格</h2><span class="hint">Bitable 双表</span></div>';
+    var when = f.lastSync ? '上次同步 ' + new Date(f.lastSync).toLocaleString('zh-CN', { hour12: false }) : '尚未同步';
+    var html = pageHead('设置', '飞书账本 · 单位字典 · 数据自检 · 关于');
+    var cards = [
+      { k: 'feishu', c: 'c-mint', icon: '🔗', title: '飞书账本', cap: (f.mode === 'mock' ? 'Mock 离线' : '真实 Base') + ' · ' + when },
+      { k: 'units', c: 'c-lav', icon: '📐', title: '单位字典', cap: Object.keys(E.UNITS).length + ' 个单位 · 换算系数' },
+      { k: 'selftest', c: 'c-yellow', icon: '🧪', title: '数据自检', cap: '商品 ' + state.items.length + ' · 记录 ' + state.records.length + ' · 沙盘 ' + state.sandbox.options.length },
+      { k: 'about', c: 'c-gray', icon: 'ℹ️', title: '关于与数据', cap: '导出 / 导入 / 重置 · v' + APP_VERSION }
+    ];
+    html += '<div class="bento">' + cards.map(function (x) {
+      return '<button class="card ' + x.c + '" data-sub="' + x.k + '">' +
+        '<span class="tag">进入</span>' +
+        '<span class="icon">' + x.icon + '</span>' +
+        '<h3>' + esc(x.title) + '</h3>' +
+        '<p class="cap">' + esc(x.cap) + '</p>' +
+        '</button>';
+    }).join('') + '</div>';
+    html += '<div class="note" style="margin-top:4px;padding:0 2px;color:var(--ink-4)">凭证只存本机 localStorage，源码与云端不含 Secret。</div>';
+    $('#view').innerHTML = html;
+  }
+
+  function renderSettingsFeishu() {
+    var f = state.feishu;
+    var html = settingsHeader('飞书账本', 'Bitable 双表 · 连接与同步');
     html += '<div class="panel">' +
       '<div class="row wrap" style="margin-bottom:12px">' +
         '<div class="seg"><button data-seg="fMode" data-value="mock" class="' + (f.mode === 'mock' ? 'on' : '') + '">Mock 离线</button>' +
@@ -1700,7 +1728,7 @@ body.sheet-open{overflow:hidden}
         '<br>' + esc(f.lastResult || 'Mock 模式会在本机模拟飞书读写与限流重试，真实模式需代理以规避浏览器 CORS。') +
       '</div></div>';
 
-    html += '<div class="sec-title"><h2>飞书总账本状态</h2><span class="hint">原首页状态已收口到这里</span></div>';
+    html += '<div class="sec-title"><h2>账本状态</h2><span class="hint">实时</span></div>';
     html += '<div class="panel"><div class="note">' +
       '当前模式：<b>' + (f.mode === 'mock' ? 'Mock 适配器（离线）' : '真实 Base') + '</b><br>' +
       '上次同步：' + (f.lastSync ? esc(new Date(f.lastSync).toLocaleString('zh-CN', { hour12: false })) : '尚未同步') + '<br>' +
@@ -1710,14 +1738,20 @@ body.sheet-open{overflow:hidden}
       '<button class="btn ghost sm" data-act="test-feishu">测试连接</button>' +
       '</div></div>';
 
-    html += '<div class="sec-title"><h2>数据自检</h2><span class="hint">v1.1.1</span></div>';
-    html += '<div class="panel"><div class="note" id="selfTestBox">' +
-      '商品 ' + state.items.length + ' 个 · 记录 ' + state.records.length + ' 条 · 沙盘候选 ' + state.sandbox.options.length + ' 个 · 单位 ' + Object.keys(E.UNITS).length + ' 个<br>' +
-      '演示用例：11-01 10kg ¥300 → ¥30.00/kg、¥15.00/500g；11-03 10kg ¥500 → ¥50.00/kg、¥25.00/500g（+66.67%）。' +
-      '</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="selftest">运行自检</button></div></div>';
+    html += '<div class="sec-title"><h2>表格权限</h2><span class="hint">Base 归应用身份所有</span></div>';
+    html += '<div class="panel"><div class="note">' +
+      '这两张表是应用身份（' + esc(f.appId || 'cli_…') + '）创建的，飞书「我的空间」里看不到是正常的。' +
+      '填你的飞书账号邮箱，点一次授权，会把你加成 <b>可管理</b> 协作者；之后就能在飞书里直接打开、编辑。' +
+      '</div>' +
+      '<label class="field" style="margin-top:10px"><span>你的飞书邮箱</span><input id="fGrantEmail" placeholder="name@company.com" value="' + esc(f.grantEmail || '') + '"/></label>' +
+      '<button class="btn ghost sm" data-act="grant">授权给我</button>' +
+      '<div class="note" id="grantBox" style="margin-top:8px;color:var(--ink-4)">' + esc(f.grantResult || '未授权过') + '</div></div>';
+    $('#view').innerHTML = html;
+  }
 
-    html += '<div class="sec-title"><h2>单位换算字典</h2><span class="hint">' + Object.keys(E.UNITS).length + ' 个单位</span></div>';
-    html += '<div class="panel"><div class="chips" style="max-height:180px;overflow:auto">' +
+  function renderSettingsUnits() {
+    var html = settingsHeader('单位字典', Object.keys(E.UNITS).length + ' 个单位 · 自定义换算系数');
+    html += '<div class="panel"><div class="chips" style="max-height:240px;overflow:auto">' +
       Object.keys(E.UNITS).map(function (k) {
         return '<span class="chip sm" title="1 ' + esc(k) + ' = ' + E.UNITS[k].factor + ' ' + esc(E.GROUP_BASE_LABEL[E.UNITS[k].group]) + '">' + esc(E.UNITS[k].label) + '</span>';
       }).join('') + '</div>' +
@@ -1728,8 +1762,20 @@ body.sheet-open{overflow:hidden}
         '</select></label>' +
         '<label class="field" style="margin:0"><span>= 多少原子量</span><input id="cuFactor" type="number" step="0.001" placeholder="如 24"/></label>' +
       '</div><button class="btn ghost sm" data-act="add-unit">添加自定义单位</button></div>';
+    $('#view').innerHTML = html;
+  }
 
-    html += '<div class="sec-title"><h2>数据</h2><span class="hint">localStorage · 离线可用</span></div>';
+  function renderSettingsSelfTest() {
+    var html = settingsHeader('数据自检', '引擎 · 数据 · 持久化');
+    html += '<div class="panel"><div class="note" id="selfTestBox">' +
+      '商品 ' + state.items.length + ' 个 · 记录 ' + state.records.length + ' 条 · 沙盘候选 ' + state.sandbox.options.length + ' 个 · 单位 ' + Object.keys(E.UNITS).length + ' 个<br>' +
+      '演示用例：11-01 10kg ¥300 → ¥30.00/kg、¥15.00/500g；11-03 10kg ¥500 → ¥50.00/kg、¥25.00/500g（+66.67%）。' +
+      '</div><div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="selftest">运行自检</button></div></div>';
+    $('#view').innerHTML = html;
+  }
+
+  function renderSettingsAbout() {
+    var html = settingsHeader('关于与数据', 'localStorage · 离线可用');
     html += '<div class="panel"><div class="row wrap">' +
       '<button class="btn ghost" data-act="export">导出 JSON</button>' +
       '<button class="btn ghost" data-act="import">导入 JSON</button>' +
@@ -1738,14 +1784,22 @@ body.sheet-open{overflow:hidden}
       '商品 ' + state.items.length + ' 个 · 记录 ' + state.records.length + ' 条 · 沙盘候选 ' + state.sandbox.options.length + ' 个。<br>' +
       '源码为单文件 H5，可直接双击打开；数据保存在浏览器本地，不联网也能用。' +
       '</div></div>';
-
     html += '<div class="sec-title"><h2>关于</h2></div><div class="panel"><div class="note">' +
       '<b>好物算算 v' + APP_VERSION + '</b> · T-020 日常消耗品单价追踪与智能比价轻应用（v1.1 迭代）<br>' +
       '计价引擎：双基准同屏折算（原子量 g / ml / 抽 / 个 / m）。<br>' +
-      '视觉：对齐全暖米白 #F7F5EE + 橘棕 #CF7A50 描边横幅 + 7 色马卡龙 Bento 卡片 + 5 栏底部导航。<br>' +
+      '视觉：暖米白 #F7F5EE + 橘棕 #CF7A50 描边 + 马卡龙色卡片 + 4 栏底部导航。<br>' +
       '交付：DeepSeek Harness（nyx），2026-11-07；终审以 Hermes 签发的 V-020 为准。' +
       '</div></div>';
     $('#view').innerHTML = html;
+  }
+
+  function renderSettings() {
+    var v = state.settingsView || 'menu';
+    if (v === 'feishu') return renderSettingsFeishu();
+    if (v === 'units') return renderSettingsUnits();
+    if (v === 'selftest') return renderSettingsSelfTest();
+    if (v === 'about') return renderSettingsAbout();
+    return renderSettingsMenu();
   }
 
   // ===================================================================== 渲染调度
@@ -2238,12 +2292,15 @@ body.sheet-open{overflow:hidden}
   }
 
   document.addEventListener('click', function (ev) {
-    var t = ev.target.closest('[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-del-rec],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-act],[data-del-opt],[data-archive],[data-close]');
+    var t = ev.target.closest('[data-sub],[data-tab],[data-nav],[data-filter],[data-seg],[data-scale],[data-edit-scale],[data-new-scale],[data-toggle-scales],[data-chan-open],[data-pick],[data-chan-new],[data-chan-create],[data-chan-back],[data-chan-done],[data-del-rec],[data-open-filter],[data-filter-pick],[data-toggle-search],[data-jump-review],[data-rebuy],[data-act],[data-del-opt],[data-archive],[data-close]');
     if (!t) return;
     var nav = t.getAttribute('data-nav');
     if (nav) { state.tab = nav; window.scrollTo({ top: 0 }); render(); return; }
     var tab = t.getAttribute('data-tab');
-    if (tab) { state.tab = tab; window.scrollTo({ top: 0 }); render(); return; }
+    if (tab) { state.tab = tab; if (tab === 'settings') state.settingsView = 'menu'; window.scrollTo({ top: 0 }); render(); return; }
+
+    var sub = t.getAttribute('data-sub');
+    if (sub) { state.settingsView = sub; window.scrollTo({ top: 0 }); renderSettings(); return; }
 
     var filt = t.getAttribute('data-filter');
     if (filt != null) {
@@ -2364,6 +2421,7 @@ body.sheet-open{overflow:hidden}
     }
     if (act === 'add-unit') { addUnit(); return; }
     if (act === 'selftest') { runSelfTest(); return; }
+    if (act === 'grant') { grantAccess(); return; }
   });
 
   // 搜索框
@@ -2546,6 +2604,43 @@ body.sheet-open{overflow:hidden}
     state.feishu.recordsTable = ($('#fRecordsTable') || {}).value || state.feishu.recordsTable;
     save();
     if (!silent) toast('飞书配置已保存到本机');
+  }
+
+  /** 把用户加成 Base 协作者：Base 由应用身份创建，用户在飞书「我的空间」里默认看不到 */
+  async function grantAccess() {
+    var f = state.feishu;
+    var box = document.getElementById('grantBox');
+    var email = ((document.getElementById('fGrantEmail') || {}).value || '').trim();
+    f.grantEmail = email;
+    if (!email) {
+      f.grantResult = '请先填飞书账号邮箱';
+      if (box) box.textContent = f.grantResult;
+      save(); toast(f.grantResult); return;
+    }
+    if (!f.proxyBase) {
+      f.grantResult = '授权失败：真实模式需要先填代理基址';
+      if (box) box.textContent = f.grantResult;
+      save(); toast(f.grantResult); return;
+    }
+    if (box) box.textContent = '正在授权…';
+    try {
+      var tk = await Feishu.token();
+      var res = await fetch(Feishu.endpoint('/open-apis/drive/v1/permissions/' + encodeURIComponent(f.appToken) +
+        '/members?type=bitable&need_notification=false'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
+        body: JSON.stringify({ member_type: 'email', member_id: email, perm: 'full_access' })
+      });
+      var j = await res.json();
+      f.grantResult = j.code === 0
+        ? '已授权：' + email + ' 现在可在飞书里打开并编辑这两张表'
+        : '授权失败 ' + j.code + '：' + (j.msg || '');
+    } catch (e) {
+      f.grantResult = '授权失败：' + ((e && e.message) || e);
+    }
+    save();
+    if (box) box.textContent = f.grantResult;
+    toast(f.grantResult);
   }
 
   function testFeishu() {
